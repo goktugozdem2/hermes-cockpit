@@ -1,0 +1,67 @@
+{
+  "updatedAt": "2026-05-06T09:54:50.672Z",
+  "mode": "continuous-orchestrator",
+  "notificationPolicy": "telegram-only-for-urgent",
+  "tickets": [
+    {
+      "id": "AUTO-1",
+      "projectSlug": "hermes-cockpit",
+      "title": "Build persistent autonomous ticket engine",
+      "status": "in_progress",
+      "priority": "P0",
+      "owner": "Main Hermes Controller",
+      "source": "orchestrator",
+      "createdAt": "2026-05-06T09:47:00Z",
+      "updatedAt": "2026-05-06T09:47:00Z",
+      "summary": "Move the cockpit from static seed data toward a persistent ticket/run/event loop that can be updated by scheduled orchestrator jobs.",
+      "nextAction": "Ship repo-backed autonomous state, panel widgets, and the first scheduler job."
+    },
+    {
+      "id": "AUTO-2",
+      "projectSlug": "gorucu",
+      "title": "Keep production smoke checks warm",
+      "status": "pending",
+      "priority": "P1",
+      "owner": "Görücü Orchestrator",
+      "source": "orchestrator",
+      "createdAt": "2026-05-06T09:47:00Z",
+      "updatedAt": "2026-05-06T09:47:00Z",
+      "summary": "Continuously check gorucu.co for production availability and create urgent alerts only if the live site fails.",
+      "nextAction": "Run scheduled HTTP smoke and update cockpit state."
+    },
+    {
+      "id": "AUTO-3",
+      "projectSlug": "sqlquest",
+      "title": "Prepare growth worker queue",
+      "status": "pending",
+      "priority": "P2",
+      "owner": "Growth Orchestrator",
+      "source": "orchestrator",
+      "createdAt": "2026-05-06T09:47:00Z",
+      "updatedAt": "2026-05-06T09:47:00Z",
+      "summary": "Maintain a backlog for Turkish SQL/data influencer outreach and analytics follow-up work.",
+      "nextAction": "Create a prioritized outreach research ticket batch once SQL Quest repo/connectors are configured."
+    }
+  ],
+  "workerRuns": [
+    {
+      "id": "RUN-1",
+      "projectSlug": "hermes-cockpit",
+      "worker": "continuous-portfolio-orchestrator",
+      "status": "running",
+      "ticketId": "AUTO-1",
+      "lastHeartbeat": "2026-05-06T09:47:00Z",
+      "summary": "Bootstrapping autonomous ticket state and cron-driven audit loop."
+    },
+    {
+      "id": "RUN-CONTINUOUS-PORTFOLIO-ORCHESTRATOR",
+      "projectSlug": "hermes-cockpit",
+      "worker": "continuous-portfolio-orchestrator",
+      "status": "running",
+      "ticketId": "AUTO-1",
+      "lastHeartbeat": "2026-05-06T09:54:50.672Z",
+      "summary": "Audited 3 projects; 0 urgent failures."
+    }
+  ],
+  "urgentAlerts": []
+}

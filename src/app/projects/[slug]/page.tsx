@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectDetails, projects } from "@/lib/cockpit-data";
+import { getAutonomousTickets, getAutonomousWorkerRuns, getUrgentAlerts } from "@/lib/autonomous-state";
 
 export function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
@@ -19,6 +20,9 @@ export default async function ProjectDetailPage({
   }
 
   const { project } = details;
+  const autonomousTickets = getAutonomousTickets(slug);
+  const autonomousWorkerRuns = getAutonomousWorkerRuns(slug);
+  const urgentAlerts = getUrgentAlerts(slug);
 
   return (
     <main className="cockpit-shell project-detail-shell">
@@ -40,10 +44,10 @@ export default async function ProjectDetailPage({
       </section>
 
       <section className="stats-grid">
-        <article><span>{project.activeAgents}</span><small>active agents</small></article>
-        <article><span>{project.pendingTasks}</span><small>pending tasks</small></article>
-        <article><span>{project.blockedTasks}</span><small>blocked tasks</small></article>
-        <article><span>{project.lastDeploy}</span><small>last deploy</small></article>
+        <article><span>{project.activeAgents + autonomousWorkerRuns.length}</span><small>active agents</small></article>
+        <article><span>{project.pendingTasks + autonomousTickets.filter((ticket) => ticket.status !== "completed").length}</span><small>pending tasks</small></article>
+        <article><span>{project.blockedTasks + autonomousTickets.filter((ticket) => ticket.status === "blocked").length}</span><small>blocked tasks</small></article>
+        <article><span>{urgentAlerts.length}</span><small>urgent alerts</small></article>
       </section>
 
       {details.architecture && (
@@ -83,12 +87,61 @@ export default async function ProjectDetailPage({
       )}
 
       <section className="panel-grid">
+        <div className="panel wide">
+          <div className="section-heading">
+            <p className="eyebrow">Autonomous tickets</p>
+            <h2>Live project queue</h2>
+          </div>
+          <div className="ticket-list compact-list">
+            {autonomousTickets.map((ticket) => (
+              <article className="ticket-row" key={ticket.id}>
+                <span className={`priority ${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
+                <div>
+                  <h3>{ticket.id}: {ticket.title}</h3>
+                  <p>{ticket.owner} · {ticket.status.replace("_", " ")} · {ticket.source}</p>
+                  <small>{ticket.nextAction}</small>
+                </div>
+              </article>
+            ))}
+            {autonomousTickets.length === 0 && <p className="muted">No autonomous tickets for this project yet.</p>}
+          </div>
+        </div>
+
+        <aside className="panel">
+          <div className="section-heading">
+            <p className="eyebrow">Urgent channel</p>
+            <h2>Telegram interrupts</h2>
+          </div>
+          <div className="alert-list">
+            {urgentAlerts.map((alert) => (
+              <article className={`alert-item ${alert.severity}`} key={alert.id}>
+                <span>Orchestrator</span>
+                <h3>{alert.title}</h3>
+                <p>{alert.body}</p>
+              </article>
+            ))}
+            {urgentAlerts.length === 0 && <p className="muted">No urgent Telegram interruptions. Normal work stays in the panel.</p>}
+          </div>
+        </aside>
+      </section>
+
+      <section className="panel-grid">
         <div className="panel">
           <div className="section-heading">
             <p className="eyebrow">Agents</p>
             <h2>Worker state</h2>
           </div>
           <div className="agent-list">
+            {autonomousWorkerRuns.map((run) => (
+              <article className="agent-row" key={run.id}>
+                <span className={`status-dot ${run.status}`} />
+                <div>
+                  <h3>{run.worker}</h3>
+                  <p>{run.ticketId} · {run.summary}</p>
+                  <small>Heartbeat: {run.lastHeartbeat}</small>
+                </div>
+              </article>
+            ))}
             {details.agentRuns.map((run) => (
               <article className="agent-row" key={run.id}>
                 <span className={`status-dot ${run.status}`} />
@@ -99,7 +152,7 @@ export default async function ProjectDetailPage({
                 </div>
               </article>
             ))}
-            {details.agentRuns.length === 0 && <p className="muted">No active agent reports yet.</p>}
+            {details.agentRuns.length === 0 && autonomousWorkerRuns.length === 0 && <p className="muted">No active agent reports yet.</p>}
           </div>
         </div>
 

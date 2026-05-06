@@ -333,6 +333,7 @@ h2 {
 .project-card p,
 .alert-item p,
 .task-row p,
+.ticket-row p,
 .agent-row p,
 .timeline-item p {
   color: #c4ccd8;
@@ -408,6 +409,7 @@ h2 {
 
 .alert-list,
 .task-list,
+.ticket-list,
 .agent-list,
 .timeline-list {
   display: grid;
@@ -416,6 +418,7 @@ h2 {
 
 .alert-item,
 .task-row,
+.ticket-row,
 .agent-row,
 .timeline-item {
   border-radius: 18px;
@@ -425,6 +428,7 @@ h2 {
 }
 
 .task-row,
+.ticket-row,
 .agent-row {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -435,6 +439,45 @@ h2 {
 .priority.p0 { background: rgba(251, 113, 133, .18); color: #ffd0d9; }
 .priority.p1 { background: rgba(245, 158, 11, .16); color: #ffe8b5; }
 .priority.p2 { background: rgba(34, 211, 238, .14); color: #ccfbff; }
+.priority.p3 { background: rgba(148, 163, 184, .14); color: #e5e7eb; }
+
+.ticket-row small {
+  color: var(--muted);
+  display: block;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.autonomous-panel {
+  border-color: rgba(167, 139, 250, .26);
+  background: linear-gradient(135deg, rgba(124, 58, 237, .18), rgba(14, 165, 233, .08));
+}
+
+.automation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.automation-grid article {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.06);
+}
+
+.automation-grid span {
+  display: block;
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.automation-grid small {
+  color: var(--muted);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
 
 .status-dot {
   width: 14px;
@@ -464,7 +507,8 @@ h2 {
 @media (max-width: 920px) {
   .hero-panel,
   .panel-grid,
-  .split-heading {
+  .split-heading,
+  .automation-grid {
     grid-template-columns: 1fr;
   }
 

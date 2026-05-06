@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { alerts, getProjectStats, projects, tasks } from "@/lib/cockpit-data";
+import {
+  autonomousState,
+  getAutonomousStats,
+  getAutonomousTickets,
+  getAutonomousWorkerRuns,
+  getUrgentAlerts,
+} from "@/lib/autonomous-state";
 
 const statusLabels = {
   healthy: "Healthy",
@@ -10,7 +17,11 @@ const statusLabels = {
 
 export default function Home() {
   const stats = getProjectStats();
-  const topAlerts = alerts.filter((alert) => alert.severity !== "success").slice(0, 4);
+  const autonomousStats = getAutonomousStats();
+  const autonomousTickets = getAutonomousTickets().slice(0, 6);
+  const workerRuns = getAutonomousWorkerRuns().slice(0, 4);
+  const urgentAlerts = getUrgentAlerts();
+  const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 4);
 
   return (
     <main className="cockpit-shell">
@@ -34,9 +45,35 @@ export default function Home() {
 
       <section className="stats-grid" aria-label="Global status">
         <article><span>{stats.totalProjects}</span><small>projects</small></article>
-        <article><span>{stats.warningProjects}</span><small>need attention</small></article>
-        <article><span>{stats.pendingTasks}</span><small>open tasks</small></article>
-        <article><span>{stats.criticalAlerts}</span><small>alerts</small></article>
+        <article><span>{autonomousStats.runningWorkers}</span><small>autonomous workers</small></article>
+        <article><span>{autonomousStats.openTickets}</span><small>live tickets</small></article>
+        <article><span>{autonomousStats.urgentAlerts}</span><small>urgent alerts</small></article>
+      </section>
+
+      <section className="panel autonomous-panel">
+        <div className="section-heading split-heading">
+          <div>
+            <p className="eyebrow">Autonomous Orchestrator</p>
+            <h2>Continuous ticket engine</h2>
+          </div>
+          <p className="muted">
+            Mode: {autonomousState.mode} · Policy: {autonomousState.notificationPolicy} · Last update: {autonomousState.updatedAt}
+          </p>
+        </div>
+        <div className="automation-grid">
+          <article>
+            <span>{autonomousStats.p0Tickets}</span>
+            <small>P0 tickets</small>
+          </article>
+          <article>
+            <span>{autonomousStats.runningWorkers}</span>
+            <small>running workers</small>
+          </article>
+          <article>
+            <span>{autonomousStats.openTickets}</span>
+            <small>open autonomous tickets</small>
+          </article>
+        </div>
       </section>
 
       <section className="panel-grid">
@@ -76,9 +113,48 @@ export default function Home() {
           <div className="alert-list">
             {topAlerts.map((alert) => (
               <article className={`alert-item ${alert.severity}`} key={alert.id}>
-                <span>{alert.source}</span>
+                <span>{"source" in alert ? alert.source : "Orchestrator"}</span>
                 <h3>{alert.title}</h3>
                 <p>{alert.body}</p>
+              </article>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <section className="panel-grid">
+        <div className="panel wide">
+          <div className="section-heading">
+            <p className="eyebrow">Live tickets</p>
+            <h2>Autonomous work queue</h2>
+          </div>
+          <div className="ticket-list">
+            {autonomousTickets.map((ticket) => (
+              <article className="ticket-row" key={ticket.id}>
+                <span className={`priority ${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
+                <div>
+                  <h3>{ticket.id}: {ticket.title}</h3>
+                  <p>{ticket.projectSlug} · {ticket.owner} · {ticket.status.replace("_", " ")}</p>
+                  <small>{ticket.nextAction}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <aside className="panel">
+          <div className="section-heading">
+            <p className="eyebrow">Workers</p>
+            <h2>Heartbeats</h2>
+          </div>
+          <div className="agent-list">
+            {workerRuns.map((run) => (
+              <article className="agent-row" key={run.id}>
+                <span className={`status-dot ${run.status}`} />
+                <div>
+                  <h3>{run.worker}</h3>
+                  <p>{run.ticketId} · {run.summary}</p>
+                  <small>Heartbeat: {run.lastHeartbeat}</small>
+                </div>
               </article>
             ))}
           </div>
