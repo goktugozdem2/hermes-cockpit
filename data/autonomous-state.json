@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T09:58:08.059Z",
+  "updatedAt": "2026-05-06T10:58:42.048Z",
   "mode": "continuous-orchestrator",
   "notificationPolicy": "telegram-only-for-urgent",
   "tickets": [
@@ -14,7 +14,12 @@
       "createdAt": "2026-05-06T09:47:00Z",
       "updatedAt": "2026-05-06T09:47:00Z",
       "summary": "Move the cockpit from static seed data toward a persistent ticket/run/event loop that can be updated by scheduled orchestrator jobs.",
-      "nextAction": "Ship repo-backed autonomous state, panel widgets, and the first scheduler job."
+      "nextAction": "Ship repo-backed autonomous state, panel widgets, and the first scheduler job.",
+      "spendEstimate": {
+        "model": "gpt-5.5",
+        "estimatedInputTokens": 900000,
+        "estimatedOutputTokens": 180000
+      }
     },
     {
       "id": "AUTO-2",
@@ -27,7 +32,12 @@
       "createdAt": "2026-05-06T09:47:00Z",
       "updatedAt": "2026-05-06T09:47:00Z",
       "summary": "Continuously check gorucu.co for production availability and create urgent alerts only if the live site fails.",
-      "nextAction": "Run scheduled HTTP smoke and update cockpit state."
+      "nextAction": "Run scheduled HTTP smoke and update cockpit state.",
+      "spendEstimate": {
+        "model": "gpt-5.5",
+        "estimatedInputTokens": 120000,
+        "estimatedOutputTokens": 20000
+      }
     },
     {
       "id": "AUTO-3",
@@ -40,7 +50,30 @@
       "createdAt": "2026-05-06T09:47:00Z",
       "updatedAt": "2026-05-06T09:47:00Z",
       "summary": "Maintain a backlog for Turkish SQL/data influencer outreach and analytics follow-up work.",
-      "nextAction": "Create a prioritized outreach research ticket batch once SQL Quest repo/connectors are configured."
+      "nextAction": "Create a prioritized outreach research ticket batch once SQL Quest repo/connectors are configured.",
+      "spendEstimate": {
+        "model": "gpt-5.5",
+        "estimatedInputTokens": 450000,
+        "estimatedOutputTokens": 90000
+      }
+    },
+    {
+      "id": "BUDGET-1",
+      "projectSlug": "hermes-cockpit",
+      "title": "Add token and cost-aware planning agent",
+      "status": "in_progress",
+      "priority": "P0",
+      "owner": "Budget Guardian Agent",
+      "source": "budget",
+      "createdAt": "2026-05-06T10:12:00Z",
+      "updatedAt": "2026-05-06T10:12:00Z",
+      "summary": "Track used budget, remaining budget, and estimated ticket burn before autonomous work executes.",
+      "nextAction": "Show budget impact in the cockpit and make the orchestrator defer high-cost tickets.",
+      "spendEstimate": {
+        "model": "gpt-5.5",
+        "estimatedInputTokens": 650000,
+        "estimatedOutputTokens": 120000
+      }
     }
   ],
   "workerRuns": [
@@ -59,9 +92,25 @@
       "worker": "continuous-portfolio-orchestrator",
       "status": "running",
       "ticketId": "AUTO-1",
-      "lastHeartbeat": "2026-05-06T09:58:08.059Z",
+      "lastHeartbeat": "2026-05-06T10:58:42.048Z",
       "summary": "Audited 3 projects; 0 urgent failures."
     }
   ],
-  "urgentAlerts": []
+  "urgentAlerts": [],
+  "aiBudget": {
+    "monthlyBudgetUsd": 100,
+    "usedUsd": 37.4,
+    "monthlyTokenLimit": 300000000,
+    "usedTokens": 113277269,
+    "resetAt": "2026-06-01T00:00:00Z",
+    "source": "Hermes insights + manual planning budget; provider dashboard sync pending",
+    "defaultModel": "gpt-5.5",
+    "inputCostPerMillion": 1.25,
+    "outputCostPerMillion": 10,
+    "policy": {
+      "autoRunBelowRemainingBudgetPercent": 10,
+      "reviewAtRemainingBudgetPercent": 30,
+      "deferAtRemainingBudgetPercent": 100
+    }
+  }
 }

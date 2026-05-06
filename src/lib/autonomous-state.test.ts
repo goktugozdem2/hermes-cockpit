@@ -29,7 +29,10 @@ describe("autonomous state", () => {
   });
 
   it("returns filtered project views and global stats", () => {
-    expect(getAutonomousTickets("hermes-cockpit").map((ticket) => ticket.projectSlug)).toEqual(["hermes-cockpit"]);
+    const cockpitTickets = getAutonomousTickets("hermes-cockpit");
+
+    expect(cockpitTickets.length).toBeGreaterThan(0);
+    expect(cockpitTickets.every((ticket) => ticket.projectSlug === "hermes-cockpit")).toBe(true);
     expect(getAutonomousWorkerRuns("hermes-cockpit").length).toBeGreaterThan(0);
     expect(getAutonomousStats().openTickets).toBeGreaterThan(0);
     expect(getAutonomousStats().runningWorkers).toBeGreaterThan(0);

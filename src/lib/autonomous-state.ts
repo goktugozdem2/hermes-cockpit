@@ -12,11 +12,18 @@ export type AutonomousTicket = {
   status: AutonomousTicketStatus;
   priority: AutonomousPriority;
   owner: string;
-  source: "orchestrator" | "worker" | "human" | "github" | "vercel" | "smoke";
+  source: "orchestrator" | "worker" | "human" | "github" | "vercel" | "smoke" | "budget";
   createdAt: string;
   updatedAt: string;
   summary: string;
   nextAction: string;
+  spendEstimate?: {
+    model?: string;
+    estimatedInputTokens: number;
+    estimatedOutputTokens: number;
+    inputCostPerMillion?: number;
+    outputCostPerMillion?: number;
+  };
 };
 
 export type AutonomousWorkerRun = {
@@ -43,6 +50,22 @@ export type AutonomousState = {
   updatedAt: string;
   mode: string;
   notificationPolicy: string;
+  aiBudget?: {
+    monthlyBudgetUsd: number;
+    usedUsd: number;
+    monthlyTokenLimit: number;
+    usedTokens: number;
+    resetAt: string;
+    source: string;
+    defaultModel: string;
+    inputCostPerMillion: number;
+    outputCostPerMillion: number;
+    policy: {
+      autoRunBelowRemainingBudgetPercent: number;
+      reviewAtRemainingBudgetPercent: number;
+      deferAtRemainingBudgetPercent: number;
+    };
+  };
   tickets: AutonomousTicket[];
   workerRuns: AutonomousWorkerRun[];
   urgentAlerts: AutonomousUrgentAlert[];

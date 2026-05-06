@@ -7,6 +7,7 @@ import {
   getAutonomousWorkerRuns,
   getUrgentAlerts,
 } from "@/lib/autonomous-state";
+import { getBudgetSnapshot, getPrioritizedTicketPlan } from "@/lib/budget-agent";
 
 const statusLabels = {
   healthy: "Healthy",
@@ -21,6 +22,8 @@ export default function Home() {
   const autonomousTickets = getAutonomousTickets().slice(0, 6);
   const workerRuns = getAutonomousWorkerRuns().slice(0, 4);
   const urgentAlerts = getUrgentAlerts();
+  const budget = getBudgetSnapshot(autonomousState);
+  const budgetPlan = getPrioritizedTicketPlan(autonomousState).slice(0, 5);
   const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 4);
 
   return (
