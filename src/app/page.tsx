@@ -16,6 +16,24 @@ const statusLabels = {
   running: "Running",
 };
 
+const numberFormatter = new Intl.NumberFormat("en-US");
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+function formatTokens(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
+  return numberFormatter.format(value);
+}
+
+function formatDate(value: string) {
+  if (value === "unknown") return "unknown";
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value));
+}
+
 export default function Home() {
   const stats = getProjectStats();
   const autonomousStats = getAutonomousStats();
@@ -24,6 +42,7 @@ export default function Home() {
   const urgentAlerts = getUrgentAlerts();
   const budget = getBudgetSnapshot(autonomousState);
   const budgetPlan = getPrioritizedTicketPlan(autonomousState).slice(0, 5);
+  const budgetPlanById = new Map(budgetPlan.map((ticket) => [ticket.id, ticket]));
   const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 4);
 
   return (
@@ -76,6 +95,51 @@ export default function Home() {
             <span>{autonomousStats.openTickets}</span>
             <small>open autonomous tickets</small>
           </article>
+        </div>
+      </section>
+
+      <section className="panel budget-panel" id="budget-guardian">
+        <div className="section-heading split-heading">
+          <div>
+            <p className="eyebrow">Budget Guardian</p>
+            <h2>Token and cost-aware planning</h2>
+          </div>
+          <p className="muted">
+            Monthly cap: {currencyFormatter.format(budget.monthlyBudgetUsd)} · Reset: {formatDate(budget.resetAt)} · Source: {budget.source}
+          </p>
+        </div>
+        <div className="budget-summary-grid">
+          <article>
+            <span>{currencyFormatter.format(budget.usedUsd)}</span>
+            <small>spent this month</small>
+          </article>
+          <article>
+            <span>{currencyFormatter.format(budget.remainingBudgetUsd)}</span>
+            <small>{budget.remainingPercent}% budget left</small>
+          </article>
+          <article>
+            <span>{formatTokens(budget.usedTokens)}</span>
+            <small>{budget.tokenUsedPercent}% tokens burned</small>
+          </article>
+          <article>
+            <span>{formatTokens(budget.remainingTokens)}</span>
+            <small>tokens left</small>
+          </article>
+        </div>
+        <div className="budget-meter" aria-label={`Budget used ${budget.usedPercent}%`}>
+          <span style={{ width: `${Math.min(budget.usedPercent, 100)}%` }} />
+        </div>
+        <div className="budget-plan">
+          {budgetPlan.map((ticket) => (
+            <article className="budget-ticket" key={ticket.id}>
+              <div>
+                <span className={`recommendation ${ticket.recommendation}`}>{ticket.recommendation}</span>
+                <h3>{ticket.id}: {ticket.title}</h3>
+                <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining budget</p>
+              </div>
+              <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -139,6 +203,11 @@ export default function Home() {
                   <h3>{ticket.id}: {ticket.title}</h3>
                   <p>{ticket.projectSlug} · {ticket.owner} · {ticket.status.replace("_", " ")}</p>
                   <small>{ticket.nextAction}</small>
+                  {budgetPlanById.get(ticket.id) && (
+                    <div className="ticket-spend">
+                      {formatTokens(budgetPlanById.get(ticket.id)!.estimatedTokens.total)} tokens · {currencyFormatter.format(budgetPlanById.get(ticket.id)!.estimatedCostUsd)} est. · {budgetPlanById.get(ticket.id)!.recommendation}
+                    </div>
+                  )}
                 </div>
               </article>
             ))}

@@ -1,7 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectDetails, projects } from "@/lib/cockpit-data";
-import { getAutonomousTickets, getAutonomousWorkerRuns, getUrgentAlerts } from "@/lib/autonomous-state";
+import { autonomousState, getAutonomousTickets, getAutonomousWorkerRuns, getUrgentAlerts } from "@/lib/autonomous-state";
+import { getPrioritizedTicketPlan } from "@/lib/budget-agent";
+
+
+const numberFormatter = new Intl.NumberFormat("en-US");
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+function formatTokens(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
+  return numberFormatter.format(value);
+}
 
 export function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
@@ -23,6 +38,8 @@ export default async function ProjectDetailPage({
   const autonomousTickets = getAutonomousTickets(slug);
   const autonomousWorkerRuns = getAutonomousWorkerRuns(slug);
   const urgentAlerts = getUrgentAlerts(slug);
+  const projectBudgetPlan = getPrioritizedTicketPlan(autonomousState).filter((ticket) => ticket.projectSlug === slug);
+  const projectBudgetById = new Map(projectBudgetPlan.map((ticket) => [ticket.id, ticket]));
 
   return (
     <main className="cockpit-shell project-detail-shell">
@@ -86,6 +103,30 @@ export default async function ProjectDetailPage({
         </section>
       )}
 
+      {projectBudgetPlan.length > 0 && (
+        <section className="panel budget-panel project-budget-panel">
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">Budget impact</p>
+              <h2>Token burn for this project</h2>
+            </div>
+            <p className="muted">Each autonomous ticket shows estimated token usage, cost, and the Budget Guardian recommendation before it runs.</p>
+          </div>
+          <div className="budget-plan compact-budget-plan">
+            {projectBudgetPlan.map((ticket) => (
+              <article className="budget-ticket" key={ticket.id}>
+                <div>
+                  <span className={`recommendation ${ticket.recommendation}`}>{ticket.recommendation}</span>
+                  <h3>{ticket.id}: {ticket.title}</h3>
+                  <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining monthly budget</p>
+                </div>
+                <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="panel-grid">
         <div className="panel wide">
           <div className="section-heading">
@@ -100,6 +141,11 @@ export default async function ProjectDetailPage({
                   <h3>{ticket.id}: {ticket.title}</h3>
                   <p>{ticket.owner} · {ticket.status.replace("_", " ")} · {ticket.source}</p>
                   <small>{ticket.nextAction}</small>
+                  {projectBudgetById.get(ticket.id) && (
+                    <div className="ticket-spend">
+                      {formatTokens(projectBudgetById.get(ticket.id)!.estimatedTokens.total)} tokens · {currencyFormatter.format(projectBudgetById.get(ticket.id)!.estimatedCostUsd)} est. · {projectBudgetById.get(ticket.id)!.remainingBudgetImpactPercent}% of remaining budget · {projectBudgetById.get(ticket.id)!.recommendation}
+                    </div>
+                  )}
                 </div>
               </article>
             ))}
