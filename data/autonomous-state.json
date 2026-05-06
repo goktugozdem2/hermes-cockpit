@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T17:04:29.000Z",
+  "updatedAt": "2026-05-06T18:05:13.628Z",
   "mode": "continuous-orchestrator",
   "notificationPolicy": "telegram-only-for-urgent",
   "tickets": [
@@ -92,7 +92,7 @@
       "worker": "continuous-portfolio-orchestrator",
       "status": "running",
       "ticketId": "AUTO-1",
-      "lastHeartbeat": "2026-05-06T17:04:29.000Z",
+      "lastHeartbeat": "2026-05-06T18:05:13.628Z",
       "summary": "Audited 3 projects; 0 urgent failures."
     }
   ],
