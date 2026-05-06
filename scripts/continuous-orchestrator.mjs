@@ -73,6 +73,7 @@ for (const project of projects) {
       summary: `${project.url} returned ${result.status || "network error"}${result.error ? ` (${result.error})` : ""}.`,
       nextAction: "Interrupt Telegram, inspect production logs, and pause non-critical autonomous work for this project.",
     });
+    const existingAlert = state.urgentAlerts.find((alert) => alert.id === alertId);
     state.urgentAlerts = upsertById(state.urgentAlerts, {
       id: alertId,
       projectSlug: project.slug,
@@ -80,7 +81,7 @@ for (const project of projects) {
       title: `${project.name} production smoke failed`,
       body: `${project.url} returned ${result.status || "network error"}${result.error ? ` (${result.error})` : ""}.`,
       createdAt: now,
-      notifiedTelegram: false,
+      notifiedTelegram: existingAlert?.notifiedTelegram ?? false,
     });
   } else {
     state.tickets = state.tickets.map((ticket) =>
