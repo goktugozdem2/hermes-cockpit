@@ -46,6 +46,42 @@ export default async function ProjectDetailPage({
         <article><span>{project.lastDeploy}</span><small>last deploy</small></article>
       </section>
 
+      {details.architecture && (
+        <section className="panel architecture-panel">
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">Architecture</p>
+              <h2>Who is involved</h2>
+            </div>
+            <p className="muted">{details.architecture.summary}</p>
+          </div>
+          <div className="architecture-map">
+            {details.architecture.nodes.map((node) => (
+              <article className={`architecture-node ${node.role}`} key={node.id}>
+                <span>{node.role}</span>
+                <h3>{node.name}</h3>
+                <p>{node.responsibility}</p>
+                <small>{node.status}</small>
+              </article>
+            ))}
+          </div>
+          <div className="relationship-list">
+            {details.architecture.relationships.map((relationship) => {
+              const from = details.architecture?.nodes.find((node) => node.id === relationship.from)?.name ?? relationship.from;
+              const to = details.architecture?.nodes.find((node) => node.id === relationship.to)?.name ?? relationship.to;
+
+              return (
+                <div className="relationship-row" key={relationship.id}>
+                  <b>{from}</b>
+                  <span>→ {relationship.label} →</span>
+                  <b>{to}</b>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <section className="panel-grid">
         <div className="panel">
           <div className="section-heading">

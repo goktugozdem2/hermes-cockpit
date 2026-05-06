@@ -203,6 +203,104 @@ h2 {
   margin-bottom: 22px;
 }
 
+.split-heading {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.architecture-panel {
+  margin-top: 18px;
+}
+
+.architecture-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.architecture-node {
+  min-height: 190px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 20px;
+  padding: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+}
+
+.architecture-node span,
+.architecture-node small {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.architecture-node span {
+  color: #ccfbff;
+  background: rgba(34, 211, 238, .12);
+  border: 1px solid rgba(34, 211, 238, .24);
+}
+
+.architecture-node.orchestrator span {
+  color: #e9d5ff;
+  background: rgba(139, 92, 246, .18);
+  border-color: rgba(139, 92, 246, .32);
+}
+
+.architecture-node.worker span {
+  color: #caffec;
+  background: rgba(52, 211, 153, .14);
+  border-color: rgba(52, 211, 153, .28);
+}
+
+.architecture-node.human span {
+  color: #ffe8b5;
+  background: rgba(245, 158, 11, .14);
+  border-color: rgba(245, 158, 11, .28);
+}
+
+.architecture-node h3 {
+  margin: 14px 0 8px;
+  font-size: 1.05rem;
+}
+
+.architecture-node p {
+  color: #c4ccd8;
+  line-height: 1.55;
+}
+
+.architecture-node small {
+  margin-top: 16px;
+  color: var(--muted);
+  background: rgba(255,255,255,.055);
+}
+
+.relationship-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.relationship-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: #dbeafe;
+  background: rgba(255,255,255,.04);
+}
+
+.relationship-row span {
+  color: var(--muted);
+}
+
 .project-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -365,8 +463,13 @@ h2 {
 
 @media (max-width: 920px) {
   .hero-panel,
-  .panel-grid {
+  .panel-grid,
+  .split-heading {
     grid-template-columns: 1fr;
+  }
+
+  .architecture-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .stats-grid,
@@ -393,7 +496,8 @@ h2 {
   }
 
   .stats-grid,
-  .project-grid {
+  .project-grid,
+  .architecture-map {
     grid-template-columns: 1fr;
   }
 }
