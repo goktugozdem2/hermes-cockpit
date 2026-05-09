@@ -46,10 +46,28 @@ export type AutonomousUrgentAlert = {
   notifiedTelegram: boolean;
 };
 
+export type HourlyProjectActivity = {
+  projectSlug: string;
+  workUnits: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+};
+
+export type HourlyActivity = {
+  hour: string;
+  label: string;
+  totalWorkUnits: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  projects: HourlyProjectActivity[];
+};
+
 export type AutonomousState = {
   updatedAt: string;
   mode: string;
   notificationPolicy: string;
+  hourlyActivity?: HourlyActivity[];
   aiBudget?: {
     monthlyBudgetUsd: number;
     usedUsd: number;
@@ -89,6 +107,27 @@ export function getUrgentAlerts(projectSlug?: string) {
   return projectSlug
     ? autonomousState.urgentAlerts.filter((alert) => alert.projectSlug === projectSlug)
     : autonomousState.urgentAlerts;
+}
+
+export function getHourlyActivity(projectSlug?: string) {
+  const activity = autonomousState.hourlyActivity ?? [];
+
+  if (!projectSlug) return activity;
+
+  return activity.map((hour) => {
+    const projectRows = hour.projects.filter((project) => project.projectSlug === projectSlug);
+    const totalTokens = projectRows.reduce((sum, project) => sum + project.inputTokens + project.outputTokens, 0);
+    const totalCostUsd = projectRows.reduce((sum, project) => sum + project.costUsd, 0);
+    const totalWorkUnits = projectRows.reduce((sum, project) => sum + project.workUnits, 0);
+
+    return {
+      ...hour,
+      projects: projectRows,
+      totalTokens,
+      totalCostUsd,
+      totalWorkUnits,
+    };
+  });
 }
 
 export function getAutonomousStats() {

@@ -4,6 +4,7 @@ import {
   getAutonomousStats,
   getAutonomousTickets,
   getAutonomousWorkerRuns,
+  getHourlyActivity,
 } from "./autonomous-state";
 import { projects } from "./cockpit-data";
 
@@ -36,5 +37,19 @@ describe("autonomous state", () => {
     expect(getAutonomousWorkerRuns("hermes-cockpit").length).toBeGreaterThan(0);
     expect(getAutonomousStats().openTickets).toBeGreaterThan(0);
     expect(getAutonomousStats().runningWorkers).toBeGreaterThan(0);
+  });
+
+  it("keeps hourly activity totals consistent for dashboard charts", () => {
+    const projectSlugs = new Set(projects.map((project) => project.slug));
+    const hours = getHourlyActivity();
+
+    expect(hours.length).toBeGreaterThan(0);
+    for (const hour of hours) {
+      expect(hour.projects.every((project) => projectSlugs.has(project.projectSlug))).toBe(true);
+      expect(hour.totalWorkUnits).toBe(hour.projects.reduce((sum, project) => sum + project.workUnits, 0));
+      expect(hour.totalTokens).toBe(hour.projects.reduce((sum, project) => sum + project.inputTokens + project.outputTokens, 0));
+    }
+
+    expect(getHourlyActivity("hermes-cockpit").every((hour) => hour.projects.every((project) => project.projectSlug === "hermes-cockpit"))).toBe(true);
   });
 });

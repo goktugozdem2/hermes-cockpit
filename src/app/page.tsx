@@ -5,6 +5,7 @@ import {
   getAutonomousStats,
   getAutonomousTickets,
   getAutonomousWorkerRuns,
+  getHourlyActivity,
   getUrgentAlerts,
 } from "@/lib/autonomous-state";
 import { getBudgetSnapshot, getPrioritizedTicketPlan } from "@/lib/budget-agent";
@@ -34,6 +35,31 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value));
 }
 
+function buildLinePath(values: number[], width = 720, height = 220) {
+  if (values.length === 0) return "";
+
+  const max = Math.max(...values, 1);
+  const step = values.length > 1 ? width / (values.length - 1) : width;
+  return values
+    .map((value, index) => {
+      const x = Math.round(index * step);
+      const y = Math.round(height - (value / max) * height);
+      return `${index === 0 ? "M" : "L"}${x},${y}`;
+    })
+    .join(" ");
+}
+
+function chartPoints(values: number[], width = 720, height = 220) {
+  const max = Math.max(...values, 1);
+  const step = values.length > 1 ? width / (values.length - 1) : width;
+
+  return values.map((value, index) => ({
+    x: Math.round(index * step),
+    y: Math.round(height - (value / max) * height),
+    value,
+  }));
+}
+
 export default function Home() {
   const stats = getProjectStats();
   const autonomousStats = getAutonomousStats();
@@ -44,6 +70,31 @@ export default function Home() {
   const budgetPlan = getPrioritizedTicketPlan(autonomousState).slice(0, 5);
   const budgetPlanById = new Map(budgetPlan.map((ticket) => [ticket.id, ticket]));
   const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 4);
+  const hourlyActivity = getHourlyActivity();
+  const hourlyTokenValues = hourlyActivity.map((hour) => hour.totalTokens);
+  const hourlyWorkValues = hourlyActivity.map((hour) => hour.totalWorkUnits);
+  const tokenLinePath = buildLinePath(hourlyTokenValues);
+  const workLinePath = buildLinePath(hourlyWorkValues);
+  const tokenPoints = chartPoints(hourlyTokenValues);
+  const workPoints = chartPoints(hourlyWorkValues);
+  const hourlyTotals = hourlyActivity.reduce(
+    (totals, hour) => ({
+      workUnits: totals.workUnits + hour.totalWorkUnits,
+      tokens: totals.tokens + hour.totalTokens,
+      costUsd: totals.costUsd + hour.totalCostUsd,
+    }),
+    { workUnits: 0, tokens: 0, costUsd: 0 },
+  );
+  const projectHourlyTotals = projects.map((project) => {
+    const projectRows = hourlyActivity.flatMap((hour) => hour.projects.filter((row) => row.projectSlug === project.slug));
+
+    return {
+      project,
+      workUnits: projectRows.reduce((sum, row) => sum + row.workUnits, 0),
+      tokens: projectRows.reduce((sum, row) => sum + row.inputTokens + row.outputTokens, 0),
+      costUsd: projectRows.reduce((sum, row) => sum + row.costUsd, 0),
+    };
+  });
 
   return (
     <main className="cockpit-shell">
@@ -138,6 +189,64 @@ export default function Home() {
                 <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining budget</p>
               </div>
               <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel activity-panel" id="hourly-activity">
+        <div className="section-heading split-heading">
+          <div>
+            <p className="eyebrow">Live hourly activity</p>
+            <h2>Work done and token burn by hour</h2>
+          </div>
+          <p className="muted">
+            Visualizes all projects per hour. Current source is cockpit state + planning estimates; provider billing sync is still pending.
+          </p>
+        </div>
+
+        <div className="activity-summary-grid">
+          <article><span>{hourlyTotals.workUnits}</span><small>work units in window</small></article>
+          <article><span>{formatTokens(hourlyTotals.tokens)}</span><small>tokens burned</small></article>
+          <article><span>{currencyFormatter.format(hourlyTotals.costUsd)}</span><small>estimated cost</small></article>
+          <article><span>{hourlyActivity.at(-1)?.label ?? "—"}</span><small>latest hour</small></article>
+        </div>
+
+        <div className="chart-card" aria-label="Hourly work and token line chart">
+          <div className="chart-legend">
+            <span className="legend-token">Tokens</span>
+            <span className="legend-work">Work units</span>
+          </div>
+          <svg className="line-chart" viewBox="0 0 720 260" role="img" aria-label="Line chart showing hourly token burn and work done">
+            {[0, 1, 2, 3].map((line) => (
+              <line key={line} x1="0" x2="720" y1={line * 70 + 10} y2={line * 70 + 10} className="chart-grid-line" />
+            ))}
+            <g transform="translate(0 16)">
+              <path d={tokenLinePath} className="chart-line token-line" />
+              <path d={workLinePath} className="chart-line work-line" />
+              {tokenPoints.map((point, index) => (
+                <circle key={`token-${hourlyActivity[index]?.hour}`} cx={point.x} cy={point.y} r="5" className="chart-point token-point">
+                  <title>{hourlyActivity[index]?.label}: {formatTokens(point.value)} tokens</title>
+                </circle>
+              ))}
+              {workPoints.map((point, index) => (
+                <circle key={`work-${hourlyActivity[index]?.hour}`} cx={point.x} cy={point.y} r="4" className="chart-point work-point">
+                  <title>{hourlyActivity[index]?.label}: {point.value} work units</title>
+                </circle>
+              ))}
+            </g>
+          </svg>
+          <div className="chart-axis">
+            {hourlyActivity.map((hour) => <span key={hour.hour}>{hour.label}</span>)}
+          </div>
+        </div>
+
+        <div className="project-activity-grid">
+          {projectHourlyTotals.map(({ project, workUnits, tokens, costUsd }) => (
+            <article className="project-activity-card" key={project.id}>
+              <span className={`status-pill ${project.status}`}>{project.name}</span>
+              <strong>{formatTokens(tokens)} tokens</strong>
+              <small>{workUnits} work units · {currencyFormatter.format(costUsd)} est.</small>
             </article>
           ))}
         </div>
