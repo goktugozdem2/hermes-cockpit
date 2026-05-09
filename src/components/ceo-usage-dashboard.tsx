@@ -30,6 +30,12 @@ type ProjectBreakdown = {
   outputTokens: number;
 };
 
+const CHART_WIDTH = 760;
+const CHART_HEIGHT = 292;
+const PLOT = { left: 62, right: 18, top: 24, bottom: 42 };
+const PLOT_WIDTH = CHART_WIDTH - PLOT.left - PLOT.right;
+const PLOT_HEIGHT = CHART_HEIGHT - PLOT.top - PLOT.bottom;
+
 const numberFormatter = new Intl.NumberFormat("en-US");
 const compactFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -41,6 +47,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+const fullDateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 function formatTokens(value: number) {
   if (value >= 1_000) return compactFormatter.format(value);
@@ -55,6 +62,12 @@ function formatDateLabel(value: string) {
   return dateFormatter.format(new Date(`${value}T00:00:00Z`));
 }
 
+function metricLabel(metric: Metric) {
+  if (metric === "cost") return "Estimated cost";
+  if (metric === "work") return "Work units";
+  return "Tokens";
+}
+
 function metricValue(point: SeriesPoint, metric: Metric) {
   if (metric === "cost") return point.costUsd;
   if (metric === "work") return point.workUnits;
@@ -67,29 +80,29 @@ function formatMetricValue(value: number, metric: Metric) {
   return `${formatTokens(value)} tokens`;
 }
 
-function buildLinePath(values: number[], width = 760, height = 240) {
-  if (values.length === 0) return "";
-
-  const max = Math.max(...values, 1);
-  const step = values.length > 1 ? width / (values.length - 1) : width;
-  return values
-    .map((value, index) => {
-      const x = Math.round(index * step);
-      const y = Math.round(height - (value / max) * height);
-      return `${index === 0 ? "M" : "L"}${x},${y}`;
-    })
-    .join(" ");
+function yTickValue(maxValue: number, tick: number) {
+  return maxValue - (maxValue * tick) / 4;
 }
 
-function chartPoints(values: number[], width = 760, height = 240) {
+function buildChartPoints(values: number[]) {
   const max = Math.max(...values, 1);
-  const step = values.length > 1 ? width / (values.length - 1) : width;
+  const step = values.length > 1 ? PLOT_WIDTH / (values.length - 1) : PLOT_WIDTH;
 
   return values.map((value, index) => ({
-    x: Math.round(index * step),
-    y: Math.round(height - (value / max) * height),
+    x: Math.round(PLOT.left + index * step),
+    y: Math.round(PLOT.top + PLOT_HEIGHT - (value / max) * PLOT_HEIGHT),
     value,
   }));
+}
+
+function buildLinePath(points: ReturnType<typeof buildChartPoints>) {
+  return points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
+}
+
+function buildAreaPath(points: ReturnType<typeof buildChartPoints>) {
+  if (points.length === 0) return "";
+  const baseline = PLOT.top + PLOT_HEIGHT;
+  return `${buildLinePath(points)} L${points.at(-1)?.x},${baseline} L${points[0].x},${baseline} Z`;
 }
 
 export function CeoUsageDashboard({ activity, projects, source }: Props) {
@@ -206,25 +219,39 @@ export function CeoUsageDashboard({ activity, projects, source }: Props) {
   }, [filteredHours, projectBySlug]);
 
   const values = series.map((point) => metricValue(point, metric));
-  const linePath = buildLinePath(values);
-  const points = chartPoints(values);
+  const chartPoints = buildChartPoints(values);
+  const linePath = buildLinePath(chartPoints);
+  const areaPath = buildAreaPath(chartPoints);
   const peak = Math.max(...values, 0);
-  const selectedDateLabel = selectedDate === "all" ? "All dates" : formatDateLabel(selectedDate);
+  const maxProjectTokens = Math.max(...projectBreakdown.map((row) => row.tokens), 1);
+  const average = values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+  const maxPoint = series.reduce<SeriesPoint | undefined>((best, point) => {
+    if (!best) return point;
+    return metricValue(point, metric) > metricValue(best, metric) ? point : best;
+  }, undefined);
+  const selectedDateLabel = selectedDate === "all" ? "All dates" : fullDateFormatter.format(new Date(`${selectedDate}T00:00:00Z`));
   const selectedProjectLabel = selectedProject === "all" ? "All projects" : projectBySlug.get(selectedProject)?.name ?? selectedProject;
+  const filterSummary = `${selectedDateLabel} · ${selectedProjectLabel} · ${granularity} · ${metricLabel(metric)}`;
 
   return (
-    <section className="panel ceo-dashboard" id="ceo-usage-dashboard">
-      <div className="section-heading split-heading">
+    <section className="panel ceo-dashboard tableau-dashboard" id="ceo-usage-dashboard">
+      <div className="tableau-title-row">
         <div>
-          <p className="eyebrow">CEO Usage Dashboard</p>
-          <h2>Date and project-based token burn</h2>
+          <p className="eyebrow">CEO Usage Dashboard · Tableau-style workbook</p>
+          <h2>Executive usage control center</h2>
+          <p className="tableau-subtitle">
+            Purpose-built for the executive question: which project burned tokens, when, and at what estimated cost?
+          </p>
         </div>
-        <p className="muted">
-          Filter by date, project, and hourly/daily granularity to see exactly where token spend and work throughput are going.
-        </p>
+        <div className="tableau-source-card" aria-label="Dashboard data source">
+          <span>Data source</span>
+          <strong>{source}</strong>
+          <small>Provider billing sync pending</small>
+        </div>
       </div>
 
-      <div className="dashboard-toolbar" aria-label="Usage dashboard filters">
+      <div className="tableau-filter-shelf" aria-label="Usage dashboard filters">
+        <div className="tableau-shelf-label">Filters</div>
         <label>
           <span>Date</span>
           <select value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} disabled={granularity === "daily"}>
@@ -247,7 +274,7 @@ export function CeoUsageDashboard({ activity, projects, source }: Props) {
           </select>
         </label>
         <label>
-          <span>Metric</span>
+          <span>Measure</span>
           <select value={metric} onChange={(event) => setMetric(event.target.value as Metric)}>
             <option value="tokens">Tokens</option>
             <option value="cost">Cost</option>
@@ -256,76 +283,141 @@ export function CeoUsageDashboard({ activity, projects, source }: Props) {
         </label>
       </div>
 
-      <div className="executive-kpis">
-        <article><span>{formatTokens(totals.tokens)}</span><small>tokens burned</small></article>
-        <article><span>{currencyFormatter.format(totals.costUsd)}</span><small>estimated cost</small></article>
-        <article><span>{numberFormatter.format(totals.workUnits)}</span><small>work units</small></article>
-        <article><span>{formatMetricValue(peak, metric)}</span><small>peak {granularity === "hourly" ? "hour" : "day"}</small></article>
+      <div className="tableau-context-bar">
+        <span>View: {filterSummary}</span>
+        <span>{series.length} marks</span>
+        <span>Peak: {formatMetricValue(peak, metric)}{maxPoint ? ` at ${maxPoint.label}` : ""}</span>
       </div>
 
-      <div className="executive-chart-card">
-        <div className="chart-card-header">
-          <div>
-            <strong>{selectedProjectLabel}</strong>
-            <small>{granularity === "hourly" ? selectedDateLabel : "Daily trend across all tracked dates"} · {metric}</small>
+      <div className="executive-kpis tableau-kpis">
+        <article><small>Total tokens</small><span>{formatTokens(totals.tokens)}</span><em>Input + output across selected view</em></article>
+        <article><small>Estimated cost</small><span>{currencyFormatter.format(totals.costUsd)}</span><em>Derived from cockpit planning model</em></article>
+        <article><small>Work units</small><span>{numberFormatter.format(totals.workUnits)}</span><em>Throughput completed by agents</em></article>
+        <article><small>Average {granularity}</small><span>{formatMetricValue(average, metric)}</span><em>Reference line on the worksheet</em></article>
+      </div>
+
+      <div className="tableau-workbook-grid">
+        <article className="tableau-sheet tableau-trend-sheet">
+          <div className="tableau-sheet-header">
+            <div>
+              <span className="worksheet-label">Worksheet 1</span>
+              <h3>{metricLabel(metric)} trend</h3>
+              <p>{selectedProjectLabel} / {granularity === "hourly" ? selectedDateLabel : "all tracked dates"}</p>
+            </div>
+            <div className="tableau-legend">
+              <span className={`legend-dot metric-${metric}`} />
+              <strong>{metricLabel(metric)}</strong>
+            </div>
           </div>
-          <span>{source}</span>
-        </div>
-        <svg className="executive-line-chart" viewBox="0 0 760 300" role="img" aria-label="CEO line chart for token cost and work usage">
-          {[0, 1, 2, 3].map((line) => (
-            <line key={line} x1="0" x2="760" y1={line * 78 + 12} y2={line * 78 + 12} className="chart-grid-line" />
-          ))}
-          <g transform="translate(0 26)">
-            <path d={linePath} className={`chart-line executive-line metric-${metric}`} />
-            {points.map((point, index) => (
-              <circle key={series[index]?.key} cx={point.x} cy={point.y} r="5" className={`chart-point metric-${metric}`}>
+
+          <svg className="tableau-line-chart" viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} role="img" aria-label="Tableau-style line chart for token cost and work usage">
+            <text x="0" y="18" className="axis-title">{metricLabel(metric)}</text>
+            {[0, 1, 2, 3, 4].map((tick) => {
+              const y = PLOT.top + (PLOT_HEIGHT * tick) / 4;
+              return (
+                <g key={tick}>
+                  <line x1={PLOT.left} x2={CHART_WIDTH - PLOT.right} y1={y} y2={y} className="tableau-grid-line" />
+                  <text x={PLOT.left - 10} y={y + 4} className="axis-tick" textAnchor="end">
+                    {formatMetricValue(yTickValue(peak || 1, tick), metric)}
+                  </text>
+                </g>
+              );
+            })}
+            <line x1={PLOT.left} x2={CHART_WIDTH - PLOT.right} y1={PLOT.top + PLOT_HEIGHT} y2={PLOT.top + PLOT_HEIGHT} className="tableau-axis-line" />
+            <line x1={PLOT.left} x2={PLOT.left} y1={PLOT.top} y2={PLOT.top + PLOT_HEIGHT} className="tableau-axis-line" />
+            {average > 0 ? (
+              <line
+                x1={PLOT.left}
+                x2={CHART_WIDTH - PLOT.right}
+                y1={PLOT.top + PLOT_HEIGHT - (average / Math.max(peak, 1)) * PLOT_HEIGHT}
+                y2={PLOT.top + PLOT_HEIGHT - (average / Math.max(peak, 1)) * PLOT_HEIGHT}
+                className="tableau-reference-line"
+              />
+            ) : null}
+            <path d={areaPath} className={`tableau-area metric-${metric}`} />
+            <path d={linePath} className={`tableau-line metric-${metric}`} />
+            {chartPoints.map((point, index) => (
+              <circle key={series[index]?.key} cx={point.x} cy={point.y} r="4.5" className={`tableau-mark metric-${metric}`}>
                 <title>{series[index]?.label}: {formatMetricValue(point.value, metric)}</title>
               </circle>
             ))}
-          </g>
-        </svg>
-        <div className="chart-axis executive-axis">
-          {series.map((point) => <span key={point.key}>{point.label}</span>)}
-        </div>
+            {series.map((point, index) => (
+              <text
+                key={point.key}
+                x={chartPoints[index]?.x ?? PLOT.left}
+                y={CHART_HEIGHT - 12}
+                textAnchor="middle"
+                className="x-axis-tick"
+              >
+                {point.label}
+              </text>
+            ))}
+            <text x={CHART_WIDTH - PLOT.right} y="18" className="reference-label" textAnchor="end">
+              Avg {formatMetricValue(average, metric)}
+            </text>
+          </svg>
+        </article>
+
+        <article className="tableau-sheet tableau-insight-sheet">
+          <div className="tableau-sheet-header compact">
+            <div>
+              <span className="worksheet-label">Insight</span>
+              <h3>Executive readout</h3>
+            </div>
+          </div>
+          <div className="insight-stack">
+            <p><strong>Primary driver:</strong> {projectBreakdown[0]?.project.name ?? "No project"} leads token burn in this slice.</p>
+            <p><strong>Peak window:</strong> {maxPoint ? `${maxPoint.label} at ${formatMetricValue(metricValue(maxPoint, metric), metric)}` : "No usage recorded"}.</p>
+            <p><strong>Dashboard rule:</strong> limited to three core views—trend, project ranking, ledger—to preserve Tableau-style clarity.</p>
+          </div>
+        </article>
       </div>
 
-      <div className="breakdown-grid">
-        <div className="breakdown-panel">
-          <div className="mini-heading">
-            <span>Project breakdown</span>
-            <small>{selectedDateLabel}</small>
+      <div className="tableau-workbook-grid secondary">
+        <article className="tableau-sheet">
+          <div className="tableau-sheet-header compact">
+            <div>
+              <span className="worksheet-label">Worksheet 2</span>
+              <h3>Project ranking</h3>
+              <p>Sorted by token burn</p>
+            </div>
           </div>
-          <div className="breakdown-list">
-            {projectBreakdown.map((row) => (
-              <article className="breakdown-row" key={row.project.slug}>
-                <div>
-                  <strong>{row.project.name}</strong>
-                  <small>{formatTokens(row.inputTokens)} in · {formatTokens(row.outputTokens)} out</small>
+          <div className="tableau-ranking-list">
+            {projectBreakdown.map((row, index) => (
+              <div className="tableau-ranking-row" key={row.project.slug}>
+                <div className="rank-label"><span>{index + 1}</span><strong>{row.project.name}</strong></div>
+                <div className="rank-bar" aria-label={`${row.project.name} token share`}>
+                  <i style={{ width: `${Math.max(7, Math.round((row.tokens / maxProjectTokens) * 100))}%` }} />
                 </div>
-                <div>
+                <div className="rank-values">
                   <strong>{formatTokens(row.tokens)}</strong>
                   <small>{currencyFormatter.format(row.costUsd)} · {row.workUnits} work</small>
                 </div>
-              </article>
+              </div>
             ))}
           </div>
-        </div>
+        </article>
 
-        <div className="breakdown-panel">
-          <div className="mini-heading">
-            <span>{granularity === "hourly" ? "Hourly" : "Daily"} burn ledger</span>
-            <small>{selectedProjectLabel}</small>
+        <article className="tableau-sheet">
+          <div className="tableau-sheet-header compact">
+            <div>
+              <span className="worksheet-label">Worksheet 3</span>
+              <h3>{granularity === "hourly" ? "Hourly" : "Daily"} burn ledger</h3>
+              <p>{selectedProjectLabel}</p>
+            </div>
           </div>
-          <div className="ledger-list">
+          <div className="tableau-ledger-list">
+            <div className="tableau-ledger-row header"><span>Period</span><span>Tokens</span><span>Cost</span><span>Work</span></div>
             {series.map((point) => (
-              <article className="ledger-row" key={point.key}>
+              <div className="tableau-ledger-row" key={point.key}>
                 <span>{point.label}</span>
                 <strong>{formatTokens(point.tokens)}</strong>
-                <small>{currencyFormatter.format(point.costUsd)} · {point.workUnits} work</small>
-              </article>
+                <strong>{currencyFormatter.format(point.costUsd)}</strong>
+                <strong>{point.workUnits}</strong>
+              </div>
             ))}
           </div>
-        </div>
+        </article>
       </div>
     </section>
   );
