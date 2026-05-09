@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CeoUsageDashboard } from "@/components/ceo-usage-dashboard";
-import { alerts, getProjectStats, projects, tasks } from "@/lib/cockpit-data";
+import { alerts, getProjectStats, projects } from "@/lib/cockpit-data";
 import {
   autonomousState,
   getAutonomousStats,
@@ -25,39 +25,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-const ceoReportIdeas = [
-  {
-    title: "Portfolio health",
-    question: "Which products are healthy, blocked, or drifting?",
-    metrics: "Health score, failing checks, deploy freshness, urgent alerts",
-  },
-  {
-    title: "AI spend & runway",
-    question: "Where is token budget going and do we need to slow down?",
-    metrics: "Monthly cost, remaining budget, tokens by project, peak burn hours",
-  },
-  {
-    title: "Execution throughput",
-    question: "Are autonomous agents producing enough useful work?",
-    metrics: "Work units/hour, open tickets, P0/P1 queue, worker heartbeats",
-  },
-  {
-    title: "Growth & traction",
-    question: "Which project deserves the next growth push?",
-    metrics: "Traffic, signups, conversion, SEO/GSC, influencer pipeline",
-  },
-  {
-    title: "Product quality & safety",
-    question: "Are we shipping reliable, safe product outcomes?",
-    metrics: "Smoke status, AI safety violations, hallucination flags, user friction",
-  },
-  {
-    title: "Founder decisions",
-    question: "What needs Can's attention today?",
-    metrics: "Approve/defer/block, top risks, next best action, owner",
-  },
-];
-
 function formatTokens(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
@@ -69,6 +36,11 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value));
 }
 
+function projectShare(projectTokens: number, totalTokens: number) {
+  if (totalTokens <= 0) return 0;
+  return Math.round((projectTokens / totalTokens) * 100);
+}
+
 export default function Home() {
   const stats = getProjectStats();
   const autonomousStats = getAutonomousStats();
@@ -77,187 +49,232 @@ export default function Home() {
   const urgentAlerts = getUrgentAlerts();
   const budget = getBudgetSnapshot(autonomousState);
   const budgetPlan = getPrioritizedTicketPlan(autonomousState).slice(0, 5);
-  const budgetPlanById = new Map(budgetPlan.map((ticket) => [ticket.id, ticket]));
-  const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 4);
+  const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 5);
   const hourlyActivity = getHourlyActivity();
+  const totalHourlyTokens = hourlyActivity.reduce((sum, hour) => sum + hour.totalTokens, 0);
+  const projectBurn = projects
+    .map((project) => {
+      const totals = hourlyActivity.reduce(
+        (sum, hour) => {
+          const row = hour.projects.find((item) => item.projectSlug === project.slug);
+          if (!row) return sum;
+          return {
+            tokens: sum.tokens + row.inputTokens + row.outputTokens,
+            costUsd: sum.costUsd + row.costUsd,
+            workUnits: sum.workUnits + row.workUnits,
+          };
+        },
+        { tokens: 0, costUsd: 0, workUnits: 0 },
+      );
+
+      return { project, ...totals };
+    })
+    .sort((a, b) => b.tokens - a.tokens);
+
+  const highestBurnProject = projectBurn.at(0);
+  const openTicketsByProject = projects.map((project) => ({
+    project,
+    tickets: autonomousState.tickets.filter((ticket) => ticket.projectSlug === project.slug && ticket.status !== "completed").length,
+    workers: workerRuns.filter((run) => run.projectSlug === project.slug && run.status === "running").length,
+  }));
 
   return (
-    <main className="cockpit-shell">
-      <section className="ceo-command-header" aria-label="CEO portfolio dashboard summary">
-        <div className="ceo-command-copy">
-          <p className="eyebrow">CEO Portfolio Dashboard</p>
-          <h1>Founder operating system for every active project.</h1>
-          <p className="hero-copy">
-            This homepage is now the executive dashboard: portfolio health, AI budget, token burn, autonomous work, project risk, and next decisions in one place.
-          </p>
-          <div className="ceo-command-actions">
-            <a href="#ceo-usage-dashboard" className="button primary">Open token burn</a>
-            <a href="#projects" className="button secondary">Review projects</a>
-            <a href="#ceo-report-stack" className="button secondary">Report ideas</a>
-          </div>
-        </div>
-        <div className="ceo-command-scorecard">
-          <article><small>Portfolio</small><strong>{stats.totalProjects}</strong><span>tracked products</span></article>
-          <article><small>AI budget left</small><strong>{budget.remainingPercent}%</strong><span>{currencyFormatter.format(budget.remainingBudgetUsd)} runway</span></article>
-          <article><small>Autonomy</small><strong>{autonomousStats.runningWorkers}</strong><span>workers running</span></article>
-          <article><small>Attention</small><strong>{stats.criticalAlerts}</strong><span>warnings / criticals</span></article>
-        </div>
-      </section>
-
-      <section className="stats-grid ceo-stats-grid" aria-label="CEO global status">
-        <article><span>{stats.totalProjects}</span><small>projects including TercihAI</small></article>
-        <article><span>{formatTokens(budget.usedTokens)}</span><small>tokens burned this month</small></article>
-        <article><span>{currencyFormatter.format(budget.usedUsd)}</span><small>AI spend this month</small></article>
-        <article><span>{autonomousStats.openTickets}</span><small>open execution tickets</small></article>
-      </section>
-
-      <section className="panel ceo-report-panel" id="ceo-report-stack">
-        <div className="section-heading split-heading">
-          <div>
-            <p className="eyebrow">CEO report stack</p>
-            <h2>What a CEO should look at daily</h2>
-          </div>
-          <p className="muted">
-            A good CEO dashboard should answer decisions, not just show charts: where to spend time, what is burning budget, what is blocked, and which product deserves the next push.
-          </p>
-        </div>
-        <div className="ceo-report-grid">
-          {ceoReportIdeas.map((report) => (
-            <article key={report.title}>
-              <strong>{report.title}</strong>
-              <p>{report.question}</p>
-              <small>{report.metrics}</small>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel autonomous-panel">
-        <div className="section-heading split-heading">
-          <div>
-            <p className="eyebrow">Autonomous Orchestrator</p>
-            <h2>Continuous ticket engine</h2>
-          </div>
-          <p className="muted">
-            Mode: {autonomousState.mode} · Policy: {autonomousState.notificationPolicy} · Last update: {autonomousState.updatedAt}
-          </p>
-        </div>
-        <div className="automation-grid">
-          <article>
-            <span>{autonomousStats.p0Tickets}</span>
-            <small>P0 tickets</small>
-          </article>
-          <article>
-            <span>{autonomousStats.runningWorkers}</span>
-            <small>running workers</small>
-          </article>
-          <article>
-            <span>{autonomousStats.openTickets}</span>
-            <small>open autonomous tickets</small>
-          </article>
-        </div>
-      </section>
-
-      <section className="panel budget-panel" id="budget-guardian">
-        <div className="section-heading split-heading">
-          <div>
-            <p className="eyebrow">Budget Guardian</p>
-            <h2>Token and cost-aware planning</h2>
-          </div>
-          <p className="muted">
-            Monthly cap: {currencyFormatter.format(budget.monthlyBudgetUsd)} · Reset: {formatDate(budget.resetAt)} · Source: {budget.source}
-          </p>
-        </div>
-        <div className="budget-summary-grid">
-          <article>
-            <span>{currencyFormatter.format(budget.usedUsd)}</span>
-            <small>spent this month</small>
-          </article>
-          <article>
-            <span>{currencyFormatter.format(budget.remainingBudgetUsd)}</span>
-            <small>{budget.remainingPercent}% budget left</small>
-          </article>
-          <article>
-            <span>{formatTokens(budget.usedTokens)}</span>
-            <small>{budget.tokenUsedPercent}% tokens burned</small>
-          </article>
-          <article>
-            <span>{formatTokens(budget.remainingTokens)}</span>
-            <small>tokens left</small>
-          </article>
-        </div>
-        <div className="budget-meter" aria-label={`Budget used ${budget.usedPercent}%`}>
-          <span style={{ width: `${Math.min(budget.usedPercent, 100)}%` }} />
-        </div>
-        <div className="budget-plan">
-          {budgetPlan.map((ticket) => (
-            <article className="budget-ticket" key={ticket.id}>
-              <div>
-                <span className={`recommendation ${ticket.recommendation}`}>{ticket.recommendation}</span>
-                <h3>{ticket.id}: {ticket.title}</h3>
-                <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining budget</p>
-              </div>
-              <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
-            </article>
-          ))}
-        </div>
+    <main className="cockpit-shell dashboard-only-shell">
+      <section className="dashboard-page-title" aria-label="Homepage dashboard collection">
+        <p className="eyebrow">CEO Cockpit · dashboards only</p>
+        <h1>Portfolio operating dashboards</h1>
+        <p>
+          The homepage is limited to executive dashboards: usage, portfolio health, AI runway, and execution control. No marketing hero, no generic lists.
+        </p>
       </section>
 
       <CeoUsageDashboard activity={hourlyActivity} projects={projects} source={budget.source} />
 
-      <section className="panel-grid">
-        <div className="panel wide" id="projects">
-          <div className="section-heading">
-            <p className="eyebrow">Projects</p>
-            <h2>Mission board</h2>
+      <section className="panel tableau-dashboard portfolio-dashboard" id="portfolio-health-dashboard" aria-label="Portfolio health dashboard">
+        <div className="tableau-title-row">
+          <div>
+            <p className="eyebrow">Portfolio Health Dashboard · Tableau-style workbook</p>
+            <h2>Product health control center</h2>
+            <p className="tableau-subtitle">Purpose-built for the executive question: which product is healthy, blocked, under-resourced, or becoming expensive?</p>
           </div>
-          <div className="project-grid">
-            {projects.map((project) => (
-              <Link href={`/projects/${project.slug}`} className="project-card" key={project.id}>
-                <div className="card-topline">
-                  <span className={`status-pill ${project.status}`}>{statusLabels[project.status]}</span>
-                  <span className="health-score">{project.healthScore}%</span>
-                </div>
-                <h3>{project.name}</h3>
-                <p>{project.description}</p>
-                <dl className="project-metrics">
-                  <div><dt>Agents</dt><dd>{project.activeAgents}</dd></div>
-                  <div><dt>Pending</dt><dd>{project.pendingTasks}</dd></div>
-                  <div><dt>Blocked</dt><dd>{project.blockedTasks}</dd></div>
-                  <div><dt>Checks</dt><dd>{project.failingChecks}</dd></div>
-                </dl>
-                <div className="tag-row">
-                  {project.tags.map((tag) => <span key={tag}>{tag}</span>)}
-                </div>
-              </Link>
-            ))}
+          <div className="tableau-source-card">
+            <span>Portfolio</span>
+            <strong>{stats.totalProjects} active projects</strong>
+            <small>{stats.criticalAlerts} warnings / criticals</small>
           </div>
         </div>
 
-        <aside className="panel">
-          <div className="section-heading">
-            <p className="eyebrow">Alerts</p>
-            <h2>Needs attention</h2>
-          </div>
-          <div className="alert-list">
-            {topAlerts.map((alert) => (
-              <article className={`alert-item ${alert.severity}`} key={alert.id}>
-                <span>{"source" in alert ? alert.source : "Orchestrator"}</span>
-                <h3>{alert.title}</h3>
-                <p>{alert.body}</p>
-              </article>
-            ))}
-          </div>
-        </aside>
+        <div className="dashboard-kpi-grid">
+          <article><span>Average health</span><strong>{Math.round(projects.reduce((sum, project) => sum + project.healthScore, 0) / projects.length)}%</strong><small>Across all tracked products</small></article>
+          <article><span>Active agents</span><strong>{projects.reduce((sum, project) => sum + project.activeAgents, 0)}</strong><small>Working across portfolio</small></article>
+          <article><span>Blocked tasks</span><strong>{projects.reduce((sum, project) => sum + project.blockedTasks, 0)}</strong><small>Needs founder/operator action</small></article>
+          <article><span>Top burner</span><strong>{highestBurnProject?.project.name ?? "n/a"}</strong><small>{highestBurnProject ? `${formatTokens(highestBurnProject.tokens)} tokens` : "No burn data"}</small></article>
+        </div>
+
+        <div className="workbook-grid three-two">
+          <article className="worksheet-card span-two">
+            <div className="worksheet-heading">
+              <span>Worksheet 2</span>
+              <h3>Project health and burn ranking</h3>
+              <p>Each row combines product health, status, work pressure, and recent token share.</p>
+            </div>
+            <div className="portfolio-table">
+              {projectBurn.map(({ project, tokens, costUsd, workUnits }) => (
+                <Link href={`/projects/${project.slug}`} className="portfolio-row" key={project.slug}>
+                  <div>
+                    <span className={`status-pill ${project.status}`}>{statusLabels[project.status]}</span>
+                    <strong>{project.name}</strong>
+                    <small>{project.focus}</small>
+                  </div>
+                  <div className="health-bar" aria-label={`${project.name} health ${project.healthScore}%`}><span style={{ width: `${project.healthScore}%` }} /></div>
+                  <div><strong>{project.healthScore}%</strong><small>health</small></div>
+                  <div><strong>{formatTokens(tokens)}</strong><small>{projectShare(tokens, totalHourlyTokens)}% token share</small></div>
+                  <div><strong>{currencyFormatter.format(costUsd)}</strong><small>{workUnits} work units</small></div>
+                </Link>
+              ))}
+            </div>
+          </article>
+
+          <aside className="worksheet-card insight-card">
+            <div className="worksheet-heading">
+              <span>Insight</span>
+              <h3>Executive readout</h3>
+            </div>
+            <div className="insight-list">
+              <article><strong>Highest burn:</strong> {highestBurnProject?.project.name ?? "n/a"} leads recent token usage.</article>
+              <article><strong>Attention:</strong> {topAlerts.length} active alerts are visible in the operating layer.</article>
+              <article><strong>Rule:</strong> prioritize low-health + high-burn products first.</article>
+            </div>
+          </aside>
+        </div>
       </section>
 
-      <section className="panel-grid">
-        <div className="panel wide">
-          <div className="section-heading">
-            <p className="eyebrow">Live tickets</p>
-            <h2>Autonomous work queue</h2>
+      <section className="panel tableau-dashboard runway-dashboard" id="ai-runway-dashboard" aria-label="AI spend and runway dashboard">
+        <div className="tableau-title-row">
+          <div>
+            <p className="eyebrow">AI Spend & Runway Dashboard · Tableau-style workbook</p>
+            <h2>Budget guardian control center</h2>
+            <p className="tableau-subtitle">Purpose-built for the executive question: how much budget is left, which planned work can auto-run, and which work needs review?</p>
           </div>
-          <div className="ticket-list">
+          <div className="tableau-source-card">
+            <span>Monthly cap</span>
+            <strong>{currencyFormatter.format(budget.monthlyBudgetUsd)}</strong>
+            <small>Reset {formatDate(budget.resetAt)} · {budget.source}</small>
+          </div>
+        </div>
+
+        <div className="dashboard-kpi-grid">
+          <article><span>Spent</span><strong>{currencyFormatter.format(budget.usedUsd)}</strong><small>{budget.usedPercent}% of monthly budget</small></article>
+          <article><span>Runway left</span><strong>{currencyFormatter.format(budget.remainingBudgetUsd)}</strong><small>{budget.remainingPercent}% remaining</small></article>
+          <article><span>Token burn</span><strong>{formatTokens(budget.usedTokens)}</strong><small>{budget.tokenUsedPercent}% of token cap</small></article>
+          <article><span>Tokens left</span><strong>{formatTokens(budget.remainingTokens)}</strong><small>Policy-aware execution buffer</small></article>
+        </div>
+
+        <div className="budget-meter workbook-meter" aria-label={`Budget used ${budget.usedPercent}%`}>
+          <span style={{ width: `${Math.min(budget.usedPercent, 100)}%` }} />
+        </div>
+
+        <div className="workbook-grid">
+          <article className="worksheet-card">
+            <div className="worksheet-heading">
+              <span>Worksheet 3</span>
+              <h3>Planned ticket spend</h3>
+              <p>Budget policy estimates before autonomous workers spend more tokens.</p>
+            </div>
+            <div className="budget-plan compact-plan">
+              {budgetPlan.map((ticket) => (
+                <article className="budget-ticket" key={ticket.id}>
+                  <div>
+                    <span className={`recommendation ${ticket.recommendation}`}>{ticket.recommendation}</span>
+                    <h3>{ticket.id}: {ticket.title}</h3>
+                    <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining budget</p>
+                  </div>
+                  <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
+                </article>
+              ))}
+            </div>
+          </article>
+
+          <aside className="worksheet-card insight-card">
+            <div className="worksheet-heading">
+              <span>Policy</span>
+              <h3>Runway readout</h3>
+            </div>
+            <div className="insight-list">
+              <article><strong>Auto-run:</strong> low-cost tickets can proceed without interrupting Telegram.</article>
+              <article><strong>Review:</strong> medium/high cost tickets stay visible before spend.</article>
+              <article><strong>Caveat:</strong> provider billing sync is pending; this is cockpit planning data.</article>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section className="panel tableau-dashboard execution-dashboard" id="execution-control-dashboard" aria-label="Execution control dashboard">
+        <div className="tableau-title-row">
+          <div>
+            <p className="eyebrow">Execution Control Dashboard · Tableau-style workbook</p>
+            <h2>Autonomous work command center</h2>
+            <p className="tableau-subtitle">Purpose-built for the executive question: what is running, what is blocked, and what requires founder attention now?</p>
+          </div>
+          <div className="tableau-source-card">
+            <span>Operating mode</span>
+            <strong>{autonomousState.mode}</strong>
+            <small>{autonomousState.notificationPolicy} · updated {autonomousState.updatedAt}</small>
+          </div>
+        </div>
+
+        <div className="dashboard-kpi-grid">
+          <article><span>P0 tickets</span><strong>{autonomousStats.p0Tickets}</strong><small>Highest priority work</small></article>
+          <article><span>Running workers</span><strong>{autonomousStats.runningWorkers}</strong><small>Current autonomous activity</small></article>
+          <article><span>Open tickets</span><strong>{autonomousStats.openTickets}</strong><small>Execution backlog</small></article>
+          <article><span>Alerts</span><strong>{topAlerts.length}</strong><small>Visible attention items</small></article>
+        </div>
+
+        <div className="workbook-grid three-two">
+          <article className="worksheet-card span-two">
+            <div className="worksheet-heading">
+              <span>Worksheet 4</span>
+              <h3>Execution queue by project</h3>
+              <p>Open ticket pressure and active worker allocation across the portfolio.</p>
+            </div>
+            <div className="execution-matrix">
+              {openTicketsByProject.map(({ project, tickets, workers }) => (
+                <article key={project.slug}>
+                  <strong>{project.name}</strong>
+                  <div className="execution-bars">
+                    <span style={{ width: `${Math.min(tickets * 16, 100)}%` }} />
+                    <span style={{ width: `${Math.min(workers * 40, 100)}%` }} />
+                  </div>
+                  <small>{tickets} open tickets · {workers} running workers</small>
+                </article>
+              ))}
+            </div>
+          </article>
+
+          <aside className="worksheet-card insight-card">
+            <div className="worksheet-heading">
+              <span>Attention</span>
+              <h3>Risk and blocker radar</h3>
+            </div>
+            <div className="alert-list dashboard-alert-list">
+              {topAlerts.map((alert) => (
+                <article className={`alert-item ${alert.severity}`} key={alert.id}>
+                  <span>{"source" in alert ? alert.source : "Orchestrator"}</span>
+                  <h3>{alert.title}</h3>
+                  <p>{alert.body}</p>
+                </article>
+              ))}
+            </div>
+          </aside>
+        </div>
+
+        <div className="worksheet-card full-width-card">
+          <div className="worksheet-heading">
+            <span>Worksheet 5</span>
+            <h3>Live autonomous ticket ledger</h3>
+            <p>Recent actionable work only; detailed project pages remain one click away.</p>
+          </div>
+          <div className="ticket-list dashboard-ticket-list">
             {autonomousTickets.map((ticket) => (
               <article className="ticket-row" key={ticket.id}>
                 <span className={`priority ${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
@@ -265,51 +282,10 @@ export default function Home() {
                   <h3>{ticket.id}: {ticket.title}</h3>
                   <p>{ticket.projectSlug} · {ticket.owner} · {ticket.status.replace("_", " ")}</p>
                   <small>{ticket.nextAction}</small>
-                  {budgetPlanById.get(ticket.id) && (
-                    <div className="ticket-spend">
-                      {formatTokens(budgetPlanById.get(ticket.id)!.estimatedTokens.total)} tokens · {currencyFormatter.format(budgetPlanById.get(ticket.id)!.estimatedCostUsd)} est. · {budgetPlanById.get(ticket.id)!.recommendation}
-                    </div>
-                  )}
                 </div>
               </article>
             ))}
           </div>
-        </div>
-        <aside className="panel">
-          <div className="section-heading">
-            <p className="eyebrow">Workers</p>
-            <h2>Heartbeats</h2>
-          </div>
-          <div className="agent-list">
-            {workerRuns.map((run) => (
-              <article className="agent-row" key={run.id}>
-                <span className={`status-dot ${run.status}`} />
-                <div>
-                  <h3>{run.worker}</h3>
-                  <p>{run.ticketId} · {run.summary}</p>
-                  <small>Heartbeat: {run.lastHeartbeat}</small>
-                </div>
-              </article>
-            ))}
-          </div>
-        </aside>
-      </section>
-
-      <section className="panel">
-        <div className="section-heading">
-          <p className="eyebrow">Open work</p>
-          <h2>Cross-project task queue</h2>
-        </div>
-        <div className="task-list">
-          {tasks.map((task) => (
-            <article className="task-row" key={task.id}>
-              <span className={`priority ${task.priority.toLowerCase()}`}>{task.priority}</span>
-              <div>
-                <h3>{task.title}</h3>
-                <p>{task.projectSlug} · {task.owner} · {task.status.replace("_", " ")}</p>
-              </div>
-            </article>
-          ))}
         </div>
       </section>
     </main>
