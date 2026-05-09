@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-09T19:45:00.000Z",
+  "updatedAt": "2026-05-09T19:57:17.490Z",
   "mode": "continuous-orchestrator",
   "notificationPolicy": "telegram-only-for-urgent",
   "hourlyActivity": [
@@ -415,7 +415,7 @@
       "label": "17:00",
       "totalWorkUnits": 11,
       "totalTokens": 2068100,
-      "totalCostUsd": 5.0,
+      "totalCostUsd": 5,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -778,7 +778,7 @@
       "worker": "continuous-portfolio-orchestrator",
       "status": "running",
       "ticketId": "AUTO-1",
-      "lastHeartbeat": "2026-05-09T18:56:05.372Z",
+      "lastHeartbeat": "2026-05-09T19:57:17.490Z",
       "summary": "Audited 3 projects; 0 urgent failures."
     },
     {
