@@ -127,17 +127,35 @@ export const projects: Project[] = [
     slug: "hermes-cockpit",
     description: "Open-source multi-project mission control for Hermes Agent users.",
     repo: "goktugozdem2/hermes-cockpit",
-    productionUrl: "local MVP",
+    productionUrl: "https://hermes-cockpit.vercel.app",
     status: "running",
-    focus: "Initial open-source MVP, project cards, alerts, and agent timeline.",
-    updatedAt: "2026-05-06T07:15:00Z",
+    focus: "CEO dashboard, project reporting, budget visibility, and autonomous orchestration UX.",
+    updatedAt: "2026-05-09T19:45:00Z",
     activeAgents: 1,
     pendingTasks: 5,
     blockedTasks: 0,
     failingChecks: 0,
-    lastDeploy: "bootstrap",
-    healthScore: 84,
+    lastDeploy: "40de416",
+    healthScore: 88,
     tags: ["Open Source", "Hermes", "Dashboard", "Next.js"],
+  },
+  {
+    id: "tercihai",
+    name: "TercihAI",
+    slug: "tercihai",
+    description: "YKS preference guidance app with ethical AI, PDF intelligence, Supabase persistence, and student-family decision support.",
+    repo: "local:/home/hermes/tercihai-web",
+    productionUrl: "MVP in progress",
+    status: "running",
+    focus: "Hallucination-safe guidance, preference reports, PDF ingestion, and university/program decision workflow.",
+    updatedAt: "2026-05-09T19:45:00Z",
+    activeAgents: 1,
+    pendingTasks: 4,
+    blockedTasks: 0,
+    failingChecks: 0,
+    lastDeploy: "local build track",
+    healthScore: 82,
+    tags: ["YKS", "AI Safety", "Supabase", "PDF"],
   },
 ];
 
@@ -148,6 +166,8 @@ export const tasks: CockpitTask[] = [
   { id: "s-1", projectSlug: "sqlquest", title: "Prepare Turkish influencer outreach batch", status: "blocked", priority: "P1", owner: "growth" },
   { id: "h-1", projectSlug: "hermes-cockpit", title: "Publish first public GitHub repository", status: "in_progress", priority: "P0", owner: "Hermes" },
   { id: "h-2", projectSlug: "hermes-cockpit", title: "Define Hermes event ingestion protocol", status: "pending", priority: "P1", owner: "community" },
+  { id: "t-1", projectSlug: "tercihai", title: "Instrument hallucination-safe answer evaluation", status: "pending", priority: "P1", owner: "Hermes" },
+  { id: "t-2", projectSlug: "tercihai", title: "Connect PDF preference report pipeline metrics", status: "pending", priority: "P1", owner: "AI safety" },
 ];
 
 export const alerts: CockpitAlert[] = [
@@ -182,10 +202,19 @@ export const alerts: CockpitAlert[] = [
     id: "a-4",
     projectSlug: "hermes-cockpit",
     severity: "info",
-    title: "Open-source MVP started",
-    body: "Initial cockpit data model and dashboard are being scaffolded for Hermes Agent users.",
+    title: "CEO dashboard upgraded",
+    body: "Homepage is being converted from marketing landing page to Tableau-style executive operating dashboard.",
     source: "Hermes",
-    createdAt: "2026-05-06T07:15:00Z",
+    createdAt: "2026-05-09T19:45:00Z",
+  },
+  {
+    id: "a-5",
+    projectSlug: "tercihai",
+    severity: "info",
+    title: "TercihAI added to portfolio cockpit",
+    body: "YKS guidance product is now tracked alongside Görücü, SQL Quest, and Hermes Cockpit with safety/reporting work queued.",
+    source: "Hermes",
+    createdAt: "2026-05-09T19:45:00Z",
   },
 ];
 
@@ -193,6 +222,7 @@ export const agentRuns: AgentRun[] = [
   { id: "r-1", projectSlug: "gorucu", name: "gorucu-orchestrator-synthesis", status: "waiting", currentTask: "Summarize worker reports", lastHeartbeat: "2026-05-06T06:45:00Z" },
   { id: "r-2", projectSlug: "gorucu", name: "gorucu-agent-board-refresh", status: "running", currentTask: "Refresh local board artifacts", lastHeartbeat: "2026-05-06T07:08:00Z" },
   { id: "r-3", projectSlug: "hermes-cockpit", name: "bootstrap-agent", status: "running", currentTask: "Create open-source dashboard MVP", lastHeartbeat: "2026-05-06T07:15:00Z" },
+  { id: "r-4", projectSlug: "tercihai", name: "tercihai-product-orchestrator", status: "waiting", currentTask: "Connect safety and PDF report metrics", lastHeartbeat: "2026-05-09T19:45:00Z" },
 ];
 
 
@@ -263,6 +293,25 @@ export const architectures: ProjectArchitecture[] = [
       { id: "h-r6", projectSlug: "hermes-cockpit", from: "main-hermes", to: "vercel", label: "deploys demo" },
     ],
   },
+  {
+    projectSlug: "tercihai",
+    summary: "TercihAI tracks the YKS guidance product loop: founder, Hermes controller, product orchestrator, AI safety worker, PDF ingestion worker, Supabase, and reporting surfaces.",
+    nodes: [
+      { id: "can", projectSlug: "tercihai", name: "Can / Product Owner", role: "human", status: "active", responsibility: "Defines ethical guidance principles, product scope, and launch priorities for students and families." },
+      { id: "main-hermes", projectSlug: "tercihai", name: "Main Hermes Controller", role: "controller", status: "active", responsibility: "Coordinates implementation, verifies safety constraints, and reports progress into the cockpit." },
+      { id: "product-orchestrator", projectSlug: "tercihai", name: "TercihAI Product Orchestrator", role: "orchestrator", status: "planned", responsibility: "Breaks YKS preference guidance into app, data, PDF, safety, and analytics workstreams." },
+      { id: "safety-worker", projectSlug: "tercihai", name: "AI Safety Worker", role: "worker", status: "planned", responsibility: "Checks hallucination bans, no-decision-forcing language, and student-family co-decision guardrails." },
+      { id: "pdf-worker", projectSlug: "tercihai", name: "PDF Intelligence Worker", role: "worker", status: "planned", responsibility: "Maintains university/program PDF extraction and preference report generation quality." },
+      { id: "supabase", projectSlug: "tercihai", name: "Supabase", role: "integration", status: "external", responsibility: "Persists students, preference sessions, reports, and audit-friendly guidance outputs." },
+    ],
+    relationships: [
+      { id: "t-r1", projectSlug: "tercihai", from: "can", to: "main-hermes", label: "product and ethics direction" },
+      { id: "t-r2", projectSlug: "tercihai", from: "main-hermes", to: "product-orchestrator", label: "plans execution" },
+      { id: "t-r3", projectSlug: "tercihai", from: "product-orchestrator", to: "safety-worker", label: "delegates safety checks" },
+      { id: "t-r4", projectSlug: "tercihai", from: "product-orchestrator", to: "pdf-worker", label: "delegates document intelligence" },
+      { id: "t-r5", projectSlug: "tercihai", from: "main-hermes", to: "supabase", label: "verifies persistence" },
+    ],
+  },
 ];
 
 export const timeline: TimelineEvent[] = [
@@ -270,6 +319,7 @@ export const timeline: TimelineEvent[] = [
   { id: "t-2", projectSlug: "gorucu", type: "check", title: "SEO safety verified", body: "Agent board is noindex, robots-disallowed, and excluded from sitemap.", createdAt: "2026-05-06T06:57:00Z", severity: "success" },
   { id: "t-3", projectSlug: "hermes-cockpit", type: "research", title: "GitHub landscape reviewed", body: "cloglog, claude-cockpit, fleetlens, and agent-orchestrator studied; build-own path selected.", createdAt: "2026-05-06T07:05:00Z", severity: "info" },
   { id: "t-4", projectSlug: "hermes-cockpit", type: "agent", title: "MVP scaffold started", body: "Next.js app, seed projects, alerts, tasks, and agent timeline are being prepared.", createdAt: "2026-05-06T07:15:00Z", severity: "info" },
+  { id: "t-5", projectSlug: "tercihai", type: "research", title: "TercihAI added to CEO cockpit", body: "YKS preference guidance, AI safety, Supabase, and PDF-reporting workstreams are now visible in portfolio reporting.", createdAt: "2026-05-09T19:45:00Z", severity: "info" },
 ];
 
 export function getProjectBySlug(slug: string) {

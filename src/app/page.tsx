@@ -25,6 +25,39 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
+const ceoReportIdeas = [
+  {
+    title: "Portfolio health",
+    question: "Which products are healthy, blocked, or drifting?",
+    metrics: "Health score, failing checks, deploy freshness, urgent alerts",
+  },
+  {
+    title: "AI spend & runway",
+    question: "Where is token budget going and do we need to slow down?",
+    metrics: "Monthly cost, remaining budget, tokens by project, peak burn hours",
+  },
+  {
+    title: "Execution throughput",
+    question: "Are autonomous agents producing enough useful work?",
+    metrics: "Work units/hour, open tickets, P0/P1 queue, worker heartbeats",
+  },
+  {
+    title: "Growth & traction",
+    question: "Which project deserves the next growth push?",
+    metrics: "Traffic, signups, conversion, SEO/GSC, influencer pipeline",
+  },
+  {
+    title: "Product quality & safety",
+    question: "Are we shipping reliable, safe product outcomes?",
+    metrics: "Smoke status, AI safety violations, hallucination flags, user friction",
+  },
+  {
+    title: "Founder decisions",
+    question: "What needs Can's attention today?",
+    metrics: "Approve/defer/block, top risks, next best action, owner",
+  },
+];
+
 function formatTokens(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
@@ -50,29 +83,53 @@ export default function Home() {
 
   return (
     <main className="cockpit-shell">
-      <section className="hero-panel">
-        <div>
-          <p className="eyebrow">Hermes Cockpit</p>
-          <h1>One cockpit for all your Hermes-powered projects.</h1>
+      <section className="ceo-command-header" aria-label="CEO portfolio dashboard summary">
+        <div className="ceo-command-copy">
+          <p className="eyebrow">CEO Portfolio Dashboard</p>
+          <h1>Founder operating system for every active project.</h1>
           <p className="hero-copy">
-            Track projects, autonomous workers, pending tasks, alerts, deployments, and agent reports from a single open-source dashboard built for Hermes Agent users.
+            This homepage is now the executive dashboard: portfolio health, AI budget, token burn, autonomous work, project risk, and next decisions in one place.
           </p>
-          <div className="hero-actions">
-            <a href="https://github.com/goktugozdem2/hermes-cockpit" className="button primary">View on GitHub</a>
-            <a href="#projects" className="button secondary">Open projects</a>
+          <div className="ceo-command-actions">
+            <a href="#ceo-usage-dashboard" className="button primary">Open token burn</a>
+            <a href="#projects" className="button secondary">Review projects</a>
+            <a href="#ceo-report-stack" className="button secondary">Report ideas</a>
           </div>
         </div>
-        <div className="status-orb" aria-label="Cockpit health summary">
-          <span>{stats.activeAgents}</span>
-          <small>active agents</small>
+        <div className="ceo-command-scorecard">
+          <article><small>Portfolio</small><strong>{stats.totalProjects}</strong><span>tracked products</span></article>
+          <article><small>AI budget left</small><strong>{budget.remainingPercent}%</strong><span>{currencyFormatter.format(budget.remainingBudgetUsd)} runway</span></article>
+          <article><small>Autonomy</small><strong>{autonomousStats.runningWorkers}</strong><span>workers running</span></article>
+          <article><small>Attention</small><strong>{stats.criticalAlerts}</strong><span>warnings / criticals</span></article>
         </div>
       </section>
 
-      <section className="stats-grid" aria-label="Global status">
-        <article><span>{stats.totalProjects}</span><small>projects</small></article>
-        <article><span>{autonomousStats.runningWorkers}</span><small>autonomous workers</small></article>
-        <article><span>{autonomousStats.openTickets}</span><small>live tickets</small></article>
-        <article><span>{autonomousStats.urgentAlerts}</span><small>urgent alerts</small></article>
+      <section className="stats-grid ceo-stats-grid" aria-label="CEO global status">
+        <article><span>{stats.totalProjects}</span><small>projects including TercihAI</small></article>
+        <article><span>{formatTokens(budget.usedTokens)}</span><small>tokens burned this month</small></article>
+        <article><span>{currencyFormatter.format(budget.usedUsd)}</span><small>AI spend this month</small></article>
+        <article><span>{autonomousStats.openTickets}</span><small>open execution tickets</small></article>
+      </section>
+
+      <section className="panel ceo-report-panel" id="ceo-report-stack">
+        <div className="section-heading split-heading">
+          <div>
+            <p className="eyebrow">CEO report stack</p>
+            <h2>What a CEO should look at daily</h2>
+          </div>
+          <p className="muted">
+            A good CEO dashboard should answer decisions, not just show charts: where to spend time, what is burning budget, what is blocked, and which product deserves the next push.
+          </p>
+        </div>
+        <div className="ceo-report-grid">
+          {ceoReportIdeas.map((report) => (
+            <article key={report.title}>
+              <strong>{report.title}</strong>
+              <p>{report.question}</p>
+              <small>{report.metrics}</small>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="panel autonomous-panel">

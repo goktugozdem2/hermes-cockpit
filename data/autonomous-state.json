@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-05-09T19:20:00.000Z",
+  "updatedAt": "2026-05-09T19:45:00.000Z",
   "mode": "continuous-orchestrator",
   "notificationPolicy": "telegram-only-for-urgent",
   "hourlyActivity": [
     {
       "hour": "2026-05-07T12:00:00Z",
       "label": "12:00",
-      "totalWorkUnits": 5,
-      "totalTokens": 810140,
-      "totalCostUsd": 1.78,
+      "totalWorkUnits": 6,
+      "totalTokens": 900140,
+      "totalCostUsd": 2.05,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -30,15 +30,22 @@
           "inputTokens": 68400,
           "outputTokens": 15840,
           "costUsd": 0.23
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 72000,
+          "outputTokens": 18000,
+          "costUsd": 0.27
         }
       ]
     },
     {
       "hour": "2026-05-07T13:00:00Z",
       "label": "13:00",
-      "totalWorkUnits": 6,
-      "totalTokens": 1315800,
-      "totalCostUsd": 2.87,
+      "totalWorkUnits": 7,
+      "totalTokens": 1429000,
+      "totalCostUsd": 3.21,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -60,15 +67,22 @@
           "inputTokens": 147600,
           "outputTokens": 28800,
           "costUsd": 0.41
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 90000,
+          "outputTokens": 23200,
+          "costUsd": 0.34
         }
       ]
     },
     {
       "hour": "2026-05-07T14:00:00Z",
       "label": "14:00",
-      "totalWorkUnits": 5,
-      "totalTokens": 978380,
-      "totalCostUsd": 2.12,
+      "totalWorkUnits": 6,
+      "totalTokens": 1114780,
+      "totalCostUsd": 2.54,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -90,15 +104,22 @@
           "inputTokens": 151200,
           "outputTokens": 27360,
           "costUsd": 0.42
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 108000,
+          "outputTokens": 28400,
+          "costUsd": 0.42
         }
       ]
     },
     {
       "hour": "2026-05-07T15:00:00Z",
       "label": "15:00",
-      "totalWorkUnits": 8,
-      "totalTokens": 1638800,
-      "totalCostUsd": 3.63,
+      "totalWorkUnits": 10,
+      "totalTokens": 1798400,
+      "totalCostUsd": 4.12,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -120,15 +141,22 @@
           "inputTokens": 223200,
           "outputTokens": 50400,
           "costUsd": 0.6
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 126000,
+          "outputTokens": 33600,
+          "costUsd": 0.49
         }
       ]
     },
     {
       "hour": "2026-05-07T16:00:00Z",
       "label": "16:00",
-      "totalWorkUnits": 5,
-      "totalTokens": 1281520,
-      "totalCostUsd": 2.75,
+      "totalWorkUnits": 6,
+      "totalTokens": 1464320,
+      "totalCostUsd": 3.32,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -150,15 +178,22 @@
           "inputTokens": 180000,
           "outputTokens": 34560,
           "costUsd": 0.44
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 144000,
+          "outputTokens": 38800,
+          "costUsd": 0.57
         }
       ]
     },
     {
       "hour": "2026-05-07T17:00:00Z",
       "label": "17:00",
-      "totalWorkUnits": 7,
-      "totalTokens": 1580900,
-      "totalCostUsd": 3.25,
+      "totalWorkUnits": 9,
+      "totalTokens": 1786900,
+      "totalCostUsd": 3.89,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -180,15 +215,22 @@
           "inputTokens": 244800,
           "outputTokens": 46800,
           "costUsd": 0.54
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 162000,
+          "outputTokens": 44000,
+          "costUsd": 0.64
         }
       ]
     },
     {
       "hour": "2026-05-08T12:00:00Z",
       "label": "12:00",
-      "totalWorkUnits": 6,
-      "totalTokens": 896860,
-      "totalCostUsd": 2.34,
+      "totalWorkUnits": 7,
+      "totalTokens": 1039860,
+      "totalCostUsd": 2.68,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -210,15 +252,22 @@
           "inputTokens": 121600,
           "outputTokens": 28160,
           "costUsd": 0.48
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 125000,
+          "outputTokens": 18000,
+          "costUsd": 0.34
         }
       ]
     },
     {
       "hour": "2026-05-08T13:00:00Z",
       "label": "13:00",
-      "totalWorkUnits": 8,
-      "totalTokens": 1451200,
-      "totalCostUsd": 3.71,
+      "totalWorkUnits": 9,
+      "totalTokens": 1617400,
+      "totalCostUsd": 4.12,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -240,15 +289,22 @@
           "inputTokens": 262400,
           "outputTokens": 51200,
           "costUsd": 0.85
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 143000,
+          "outputTokens": 23200,
+          "costUsd": 0.41
         }
       ]
     },
     {
       "hour": "2026-05-08T14:00:00Z",
       "label": "14:00",
-      "totalWorkUnits": 5,
-      "totalTokens": 1092320,
-      "totalCostUsd": 2.81,
+      "totalWorkUnits": 6,
+      "totalTokens": 1281720,
+      "totalCostUsd": 3.3,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -270,15 +326,22 @@
           "inputTokens": 268800,
           "outputTokens": 48640,
           "costUsd": 0.87
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 161000,
+          "outputTokens": 28400,
+          "costUsd": 0.49
         }
       ]
     },
     {
       "hour": "2026-05-08T15:00:00Z",
       "label": "15:00",
-      "totalWorkUnits": 9,
-      "totalTokens": 1881200,
-      "totalCostUsd": 4.84,
+      "totalWorkUnits": 11,
+      "totalTokens": 2093800,
+      "totalCostUsd": 5.4,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -300,15 +363,22 @@
           "inputTokens": 396800,
           "outputTokens": 89600,
           "costUsd": 1.23
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 179000,
+          "outputTokens": 33600,
+          "costUsd": 0.56
         }
       ]
     },
     {
       "hour": "2026-05-08T16:00:00Z",
       "label": "16:00",
-      "totalWorkUnits": 7,
-      "totalTokens": 1430680,
-      "totalCostUsd": 3.57,
+      "totalWorkUnits": 8,
+      "totalTokens": 1666480,
+      "totalCostUsd": 4.2,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -330,15 +400,22 @@
           "inputTokens": 320000,
           "outputTokens": 61440,
           "costUsd": 0.92
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 197000,
+          "outputTokens": 38800,
+          "costUsd": 0.63
         }
       ]
     },
     {
       "hour": "2026-05-08T17:00:00Z",
       "label": "17:00",
-      "totalWorkUnits": 9,
-      "totalTokens": 1809100,
-      "totalCostUsd": 4.29,
+      "totalWorkUnits": 11,
+      "totalTokens": 2068100,
+      "totalCostUsd": 5.0,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -360,15 +437,22 @@
           "inputTokens": 435200,
           "outputTokens": 83200,
           "costUsd": 1.13
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 215000,
+          "outputTokens": 44000,
+          "costUsd": 0.71
         }
       ]
     },
     {
       "hour": "2026-05-09T12:00:00Z",
       "label": "12:00",
-      "totalWorkUnits": 6,
-      "totalTokens": 997000,
-      "totalCostUsd": 2.82,
+      "totalWorkUnits": 7,
+      "totalTokens": 1204000,
+      "totalCostUsd": 3.31,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -390,15 +474,22 @@
           "inputTokens": 95000,
           "outputTokens": 22000,
           "costUsd": 0.41
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 180000,
+          "outputTokens": 27000,
+          "costUsd": 0.49
         }
       ]
     },
     {
       "hour": "2026-05-09T13:00:00Z",
       "label": "13:00",
-      "totalWorkUnits": 8,
-      "totalTokens": 1575000,
-      "totalCostUsd": 4.41,
+      "totalWorkUnits": 9,
+      "totalTokens": 1805200,
+      "totalCostUsd": 4.98,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -420,15 +511,22 @@
           "inputTokens": 205000,
           "outputTokens": 40000,
           "costUsd": 0.73
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 198000,
+          "outputTokens": 32200,
+          "costUsd": 0.57
         }
       ]
     },
     {
       "hour": "2026-05-09T14:00:00Z",
       "label": "14:00",
-      "totalWorkUnits": 5,
-      "totalTokens": 1147000,
-      "totalCostUsd": 3.22,
+      "totalWorkUnits": 6,
+      "totalTokens": 1400400,
+      "totalCostUsd": 3.86,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -450,15 +548,22 @@
           "inputTokens": 210000,
           "outputTokens": 38000,
           "costUsd": 0.75
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 216000,
+          "outputTokens": 37400,
+          "costUsd": 0.64
         }
       ]
     },
     {
       "hour": "2026-05-09T15:00:00Z",
       "label": "15:00",
-      "totalWorkUnits": 10,
-      "totalTokens": 2020000,
-      "totalCostUsd": 5.73,
+      "totalWorkUnits": 12,
+      "totalTokens": 2296600,
+      "totalCostUsd": 6.45,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -480,15 +585,22 @@
           "inputTokens": 310000,
           "outputTokens": 70000,
           "costUsd": 1.06
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 234000,
+          "outputTokens": 42600,
+          "costUsd": 0.72
         }
       ]
     },
     {
       "hour": "2026-05-09T16:00:00Z",
       "label": "16:00",
-      "totalWorkUnits": 7,
-      "totalTokens": 1520000,
-      "totalCostUsd": 4.18,
+      "totalWorkUnits": 8,
+      "totalTokens": 1819800,
+      "totalCostUsd": 4.97,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -510,15 +622,22 @@
           "inputTokens": 250000,
           "outputTokens": 48000,
           "costUsd": 0.79
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 1,
+          "inputTokens": 252000,
+          "outputTokens": 47800,
+          "costUsd": 0.79
         }
       ]
     },
     {
       "hour": "2026-05-09T17:00:00Z",
       "label": "17:00",
-      "totalWorkUnits": 9,
-      "totalTokens": 1915000,
-      "totalCostUsd": 5.04,
+      "totalWorkUnits": 11,
+      "totalTokens": 2238000,
+      "totalCostUsd": 5.91,
       "projects": [
         {
           "projectSlug": "hermes-cockpit",
@@ -540,6 +659,13 @@
           "inputTokens": 340000,
           "outputTokens": 65000,
           "costUsd": 0.97
+        },
+        {
+          "projectSlug": "tercihai",
+          "workUnits": 2,
+          "inputTokens": 270000,
+          "outputTokens": 53000,
+          "costUsd": 0.87
         }
       ]
     }
@@ -616,6 +742,24 @@
         "estimatedInputTokens": 650000,
         "estimatedOutputTokens": 120000
       }
+    },
+    {
+      "id": "AUTO-TERCIHAI-1",
+      "projectSlug": "tercihai",
+      "title": "Build ethical YKS guidance dashboard and PDF intelligence loop",
+      "status": "pending",
+      "priority": "P1",
+      "owner": "TercihAI Product Orchestrator",
+      "source": "orchestrator",
+      "createdAt": "2026-05-09T19:45:00Z",
+      "updatedAt": "2026-05-09T19:45:00Z",
+      "summary": "Track hallucination-safe guidance, student/family decision support, PDF ingestion, and Supabase-backed preference workflows.",
+      "nextAction": "Instrument app health, AI answer safety checks, and preference-report generation pipeline.",
+      "spendEstimate": {
+        "model": "gpt-5.5",
+        "estimatedInputTokens": 520000,
+        "estimatedOutputTokens": 110000
+      }
     }
   ],
   "workerRuns": [
@@ -636,6 +780,15 @@
       "ticketId": "AUTO-1",
       "lastHeartbeat": "2026-05-09T18:56:05.372Z",
       "summary": "Audited 3 projects; 0 urgent failures."
+    },
+    {
+      "id": "RUN-TERCIHAI-PLANNER",
+      "projectSlug": "tercihai",
+      "worker": "tercihai-product-orchestrator",
+      "status": "waiting",
+      "ticketId": "AUTO-TERCIHAI-1",
+      "lastHeartbeat": "2026-05-09T19:45:00Z",
+      "summary": "Waiting to connect TercihAI repo signals, Supabase health, and AI safety checks into the cockpit."
     }
   ],
   "urgentAlerts": [],

@@ -67,6 +67,109 @@ a {
   align-items: center;
 }
 
+.ceo-command-header {
+  min-height: 420px;
+  border: 1px solid rgba(226, 232, 240, .22);
+  border-radius: 36px;
+  padding: clamp(28px, 5vw, 58px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+  gap: 28px;
+  align-items: center;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(34, 211, 238, .28), transparent 28rem),
+    linear-gradient(135deg, rgba(15, 23, 42, .94), rgba(30, 41, 59, .92));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .32);
+}
+
+.ceo-command-copy h1 {
+  max-width: 880px;
+}
+
+.ceo-command-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.ceo-command-scorecard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ceo-command-scorecard article {
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 20px;
+  background: rgba(255,255,255,.075);
+  backdrop-filter: blur(16px);
+}
+
+.ceo-command-scorecard small,
+.ceo-command-scorecard span {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.ceo-command-scorecard strong {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+
+.ceo-report-panel {
+  margin-top: 18px;
+  border-color: rgba(148, 163, 184, .28);
+  background: linear-gradient(135deg, rgba(15, 23, 42, .72), rgba(30, 41, 59, .44));
+}
+
+.ceo-report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ceo-report-grid article {
+  min-height: 168px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 18px;
+  background: rgba(255,255,255,.055);
+}
+
+.ceo-report-grid strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.ceo-report-grid p {
+  margin-top: 10px;
+  color: #cbd5e1;
+  line-height: 1.48;
+}
+
+.ceo-report-grid small {
+  display: block;
+  margin-top: 14px;
+  color: #93c5fd;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.ceo-stats-grid article {
+  background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.055));
+}
+
 .hero-panel.compact {
   min-height: 260px;
 }
@@ -1380,6 +1483,9 @@ h2 {
 
 @media (max-width: 920px) {
   .hero-panel,
+  .ceo-command-header,
+  .ceo-command-scorecard,
+  .ceo-report-grid,
   .panel-grid,
   .split-heading,
   .automation-grid,
@@ -1428,6 +1534,7 @@ h2 {
   }
 
   .hero-panel,
+  .ceo-command-header,
   .panel,
   .project-card {
     border-radius: 22px;
@@ -1444,6 +1551,8 @@ h2 {
   .executive-kpis,
   .breakdown-grid,
   .budget-ticket,
+  .ceo-command-scorecard,
+  .ceo-report-grid,
   .tableau-title-row,
   .tableau-filter-shelf,
   .tableau-workbook-grid,
