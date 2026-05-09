@@ -1,8 +1,368 @@
 {
-  "updatedAt": "2026-05-09T18:56:05.372Z",
+  "updatedAt": "2026-05-09T19:20:00.000Z",
   "mode": "continuous-orchestrator",
   "notificationPolicy": "telegram-only-for-urgent",
   "hourlyActivity": [
+    {
+      "hour": "2026-05-07T12:00:00Z",
+      "label": "12:00",
+      "totalWorkUnits": 5,
+      "totalTokens": 810140,
+      "totalCostUsd": 1.78,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 2,
+          "inputTokens": 353600,
+          "outputTokens": 71400,
+          "costUsd": 0.9
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 247800,
+          "outputTokens": 53100,
+          "costUsd": 0.65
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 68400,
+          "outputTokens": 15840,
+          "costUsd": 0.23
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-07T13:00:00Z",
+      "label": "13:00",
+      "totalWorkUnits": 6,
+      "totalTokens": 1315800,
+      "totalCostUsd": 2.87,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 3,
+          "inputTokens": 482800,
+          "outputTokens": 102000,
+          "costUsd": 1.27
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 460200,
+          "outputTokens": 94400,
+          "costUsd": 1.19
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 147600,
+          "outputTokens": 28800,
+          "costUsd": 0.41
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-07T14:00:00Z",
+      "label": "14:00",
+      "totalWorkUnits": 5,
+      "totalTokens": 978380,
+      "totalCostUsd": 2.12,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 2,
+          "inputTokens": 292400,
+          "outputTokens": 62560,
+          "costUsd": 0.77
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 371700,
+          "outputTokens": 73160,
+          "costUsd": 0.93
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 151200,
+          "outputTokens": 27360,
+          "costUsd": 0.42
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-07T15:00:00Z",
+      "label": "15:00",
+      "totalWorkUnits": 8,
+      "totalTokens": 1638800,
+      "totalCostUsd": 3.63,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 4,
+          "inputTokens": 632400,
+          "outputTokens": 142800,
+          "costUsd": 1.73
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 483800,
+          "outputTokens": 106200,
+          "costUsd": 1.3
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 2,
+          "inputTokens": 223200,
+          "outputTokens": 50400,
+          "costUsd": 0.6
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-07T16:00:00Z",
+      "label": "16:00",
+      "totalWorkUnits": 5,
+      "totalTokens": 1281520,
+      "totalCostUsd": 2.75,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 2,
+          "inputTokens": 421600,
+          "outputTokens": 88400,
+          "costUsd": 1.1
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 460200,
+          "outputTokens": 96760,
+          "costUsd": 1.21
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 180000,
+          "outputTokens": 34560,
+          "costUsd": 0.44
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-07T17:00:00Z",
+      "label": "17:00",
+      "totalWorkUnits": 7,
+      "totalTokens": 1580900,
+      "totalCostUsd": 3.25,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 3,
+          "inputTokens": 557600,
+          "outputTokens": 112200,
+          "costUsd": 1.42
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 519200,
+          "outputTokens": 100300,
+          "costUsd": 1.29
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 2,
+          "inputTokens": 244800,
+          "outputTokens": 46800,
+          "costUsd": 0.54
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T12:00:00Z",
+      "label": "12:00",
+      "totalWorkUnits": 6,
+      "totalTokens": 896860,
+      "totalCostUsd": 2.34,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 3,
+          "inputTokens": 426400,
+          "outputTokens": 86100,
+          "costUsd": 1.27
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 193200,
+          "outputTokens": 41400,
+          "costUsd": 0.59
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 121600,
+          "outputTokens": 28160,
+          "costUsd": 0.48
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T13:00:00Z",
+      "label": "13:00",
+      "totalWorkUnits": 8,
+      "totalTokens": 1451200,
+      "totalCostUsd": 3.71,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 4,
+          "inputTokens": 582200,
+          "outputTokens": 123000,
+          "costUsd": 1.78
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 3,
+          "inputTokens": 358800,
+          "outputTokens": 73600,
+          "costUsd": 1.08
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 262400,
+          "outputTokens": 51200,
+          "costUsd": 0.85
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T14:00:00Z",
+      "label": "14:00",
+      "totalWorkUnits": 5,
+      "totalTokens": 1092320,
+      "totalCostUsd": 2.81,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 2,
+          "inputTokens": 352600,
+          "outputTokens": 75440,
+          "costUsd": 1.09
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 2,
+          "inputTokens": 289800,
+          "outputTokens": 57040,
+          "costUsd": 0.85
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 268800,
+          "outputTokens": 48640,
+          "costUsd": 0.87
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T15:00:00Z",
+      "label": "15:00",
+      "totalWorkUnits": 9,
+      "totalTokens": 1881200,
+      "totalCostUsd": 4.84,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 4,
+          "inputTokens": 762600,
+          "outputTokens": 172200,
+          "costUsd": 2.43
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 3,
+          "inputTokens": 377200,
+          "outputTokens": 82800,
+          "costUsd": 1.18
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 2,
+          "inputTokens": 396800,
+          "outputTokens": 89600,
+          "costUsd": 1.23
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T16:00:00Z",
+      "label": "16:00",
+      "totalWorkUnits": 7,
+      "totalTokens": 1430680,
+      "totalCostUsd": 3.57,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 3,
+          "inputTokens": 508400,
+          "outputTokens": 106600,
+          "costUsd": 1.55
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 3,
+          "inputTokens": 358800,
+          "outputTokens": 75440,
+          "costUsd": 1.1
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 1,
+          "inputTokens": 320000,
+          "outputTokens": 61440,
+          "costUsd": 0.92
+        }
+      ]
+    },
+    {
+      "hour": "2026-05-08T17:00:00Z",
+      "label": "17:00",
+      "totalWorkUnits": 9,
+      "totalTokens": 1809100,
+      "totalCostUsd": 4.29,
+      "projects": [
+        {
+          "projectSlug": "hermes-cockpit",
+          "workUnits": 4,
+          "inputTokens": 672400,
+          "outputTokens": 135300,
+          "costUsd": 1.99
+        },
+        {
+          "projectSlug": "gorucu",
+          "workUnits": 3,
+          "inputTokens": 404800,
+          "outputTokens": 78200,
+          "costUsd": 1.17
+        },
+        {
+          "projectSlug": "sqlquest",
+          "workUnits": 2,
+          "inputTokens": 435200,
+          "outputTokens": 83200,
+          "costUsd": 1.13
+        }
+      ]
+    },
     {
       "hour": "2026-05-09T12:00:00Z",
       "label": "12:00",
