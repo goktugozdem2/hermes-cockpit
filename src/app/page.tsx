@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { CeoUsageDashboard } from "@/components/ceo-usage-dashboard";
-import { alerts, getProjectStats, projects } from "@/lib/cockpit-data";
+import { alerts, projects } from "@/lib/cockpit-data";
 import {
   autonomousState,
   getAutonomousStats,
   getAutonomousTickets,
-  getAutonomousWorkerRuns,
   getHourlyActivity,
   getUrgentAlerts,
 } from "@/lib/autonomous-state";
-import { getBudgetSnapshot, getPrioritizedTicketPlan } from "@/lib/budget-agent";
+import { getBudgetSnapshot } from "@/lib/budget-agent";
 
 const statusLabels = {
   healthy: "Healthy",
@@ -18,41 +17,41 @@ const statusLabels = {
   running: "Running",
 };
 
-const numberFormatter = new Intl.NumberFormat("en-US");
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   maximumFractionDigits: 2,
 });
 
-function formatTokens(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${Math.round(value / 1_000)}K`;
-  return numberFormatter.format(value);
+function verdictForProject(projectSlug: string) {
+  if (projectSlug === "gorucu") return "Push growth";
+  if (projectSlug === "sqlquest") return "Fix growth pipeline";
+  if (projectSlug === "tercihai") return "Validate safety";
+  if (projectSlug === "hermes-cockpit") return "Ship dashboard";
+  return "Keep moving";
 }
 
-function formatDate(value: string) {
-  if (value === "unknown") return "unknown";
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value));
-}
-
-function projectShare(projectTokens: number, totalTokens: number) {
-  if (totalTokens <= 0) return 0;
-  return Math.round((projectTokens / totalTokens) * 100);
+function healthSentence(averageHealth: number, attentionCount: number) {
+  if (attentionCount > 2) return "Mostly healthy. A few decisions need attention.";
+  if (averageHealth >= 85) return "Everything is mostly healthy.";
+  if (averageHealth >= 75) return "Healthy, but not quiet.";
+  return "Needs attention today.";
 }
 
 export default function Home() {
-  const stats = getProjectStats();
   const autonomousStats = getAutonomousStats();
-  const autonomousTickets = getAutonomousTickets().slice(0, 6);
-  const workerRuns = getAutonomousWorkerRuns().slice(0, 4);
+  const autonomousTickets = getAutonomousTickets().slice(0, 5);
   const urgentAlerts = getUrgentAlerts();
+  const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 3);
   const budget = getBudgetSnapshot(autonomousState);
-  const budgetPlan = getPrioritizedTicketPlan(autonomousState).slice(0, 5);
-  const topAlerts = [...urgentAlerts, ...alerts.filter((alert) => alert.severity !== "success")].slice(0, 5);
   const hourlyActivity = getHourlyActivity();
-  const totalHourlyTokens = hourlyActivity.reduce((sum, hour) => sum + hour.totalTokens, 0);
-  const projectBurn = projects
+  const totalWorkUnits = hourlyActivity.reduce((sum, hour) => sum + hour.totalWorkUnits, 0);
+  const averageHealth = Math.round(projects.reduce((sum, project) => sum + project.healthScore, 0) / projects.length);
+  const blockedTasks = projects.reduce((sum, project) => sum + project.blockedTasks, 0);
+  const attentionCount = topAlerts.length + blockedTasks;
+  const todayLine = healthSentence(averageHealth, attentionCount);
+
+  const projectRows = projects
     .map((project) => {
       const totals = hourlyActivity.reduce(
         (sum, hour) => {
@@ -67,225 +66,106 @@ export default function Home() {
         { tokens: 0, costUsd: 0, workUnits: 0 },
       );
 
-      return { project, ...totals };
+      return { project, ...totals, verdict: verdictForProject(project.slug) };
     })
     .sort((a, b) => b.tokens - a.tokens);
 
-  const highestBurnProject = projectBurn.at(0);
-  const openTicketsByProject = projects.map((project) => ({
-    project,
-    tickets: autonomousState.tickets.filter((ticket) => ticket.projectSlug === project.slug && ticket.status !== "completed").length,
-    workers: workerRuns.filter((run) => run.projectSlug === project.slug && run.status === "running").length,
-  }));
+  const nextDecision = autonomousState.tickets.find((ticket) => ticket.projectSlug === "tercihai") ?? autonomousTickets[0];
+  const founderAttention = [
+    nextDecision ? `Approve: ${nextDecision.title}` : "Review today's product priorities",
+    "Decide SQL Quest influencer outreach priority",
+    "Review Görücü beta positioning",
+  ].slice(0, 3);
 
   return (
-    <main className="cockpit-shell dashboard-only-shell">
-      <section className="dashboard-page-title" aria-label="Homepage dashboard collection">
-        <p className="eyebrow">CEO Cockpit · dashboards only</p>
-        <h1>Portfolio operating dashboards</h1>
-        <p>
-          The homepage is limited to executive dashboards: usage, portfolio health, AI runway, and execution control. No marketing hero, no generic lists.
+    <main className="cockpit-shell jobs-shell">
+      <section className="jobs-hero" aria-label="Steve Jobs style CEO dashboard snapshot">
+        <p className="jobs-kicker">Today · CEO Dashboard</p>
+        <h1>{todayLine}</h1>
+        <p className="jobs-summary">
+          AI spend is under control. Execution is active. TercihAI needs one safety decision.
         </p>
+
+        <div className="jobs-snapshot-grid" aria-label="Today CEO Snapshot">
+          <article>
+            <span>Health</span>
+            <strong>{averageHealth}%</strong>
+            <small>{projects.length} projects, {topAlerts.length} alerts</small>
+          </article>
+          <article>
+            <span>Spend</span>
+            <strong>{currencyFormatter.format(budget.usedUsd)}</strong>
+            <small>{budget.remainingPercent}% budget left</small>
+          </article>
+          <article>
+            <span>Work</span>
+            <strong>{totalWorkUnits}</strong>
+            <small>units completed</small>
+          </article>
+          <article>
+            <span>Risk</span>
+            <strong>{blockedTasks}</strong>
+            <small>blocked tasks</small>
+          </article>
+          <article className="next-action-card">
+            <span>Next</span>
+            <strong>TercihAI safety</strong>
+            <small>Approve metrics</small>
+          </article>
+        </div>
+      </section>
+
+      <section className="jobs-attention" aria-label="Needs Can today">
+        <div>
+          <p className="jobs-kicker">Needs Can</p>
+          <h2>Three decisions. Nothing else.</h2>
+        </div>
+        <ol>
+          {founderAttention.map((item) => <li key={item}>{item}</li>)}
+        </ol>
       </section>
 
       <CeoUsageDashboard activity={hourlyActivity} projects={projects} source={budget.source} />
 
-      <section className="panel tableau-dashboard portfolio-dashboard" id="portfolio-health-dashboard" aria-label="Portfolio health dashboard">
-        <div className="tableau-title-row">
-          <div>
-            <p className="eyebrow">Portfolio Health Dashboard · Tableau-style workbook</p>
-            <h2>Product health control center</h2>
-            <p className="tableau-subtitle">Purpose-built for the executive question: which product is healthy, blocked, under-resourced, or becoming expensive?</p>
-          </div>
-          <div className="tableau-source-card">
-            <span>Portfolio</span>
-            <strong>{stats.totalProjects} active projects</strong>
-            <small>{stats.criticalAlerts} warnings / criticals</small>
-          </div>
+      <section className="jobs-section jobs-projects" id="projects" aria-label="Project health dashboard">
+        <div className="jobs-section-heading">
+          <p className="jobs-kicker">Projects</p>
+          <h2>Know what to do with each product.</h2>
         </div>
-
-        <div className="dashboard-kpi-grid">
-          <article><span>Average health</span><strong>{Math.round(projects.reduce((sum, project) => sum + project.healthScore, 0) / projects.length)}%</strong><small>Across all tracked products</small></article>
-          <article><span>Active agents</span><strong>{projects.reduce((sum, project) => sum + project.activeAgents, 0)}</strong><small>Working across portfolio</small></article>
-          <article><span>Blocked tasks</span><strong>{projects.reduce((sum, project) => sum + project.blockedTasks, 0)}</strong><small>Needs founder/operator action</small></article>
-          <article><span>Top burner</span><strong>{highestBurnProject?.project.name ?? "n/a"}</strong><small>{highestBurnProject ? `${formatTokens(highestBurnProject.tokens)} tokens` : "No burn data"}</small></article>
-        </div>
-
-        <div className="workbook-grid three-two">
-          <article className="worksheet-card span-two">
-            <div className="worksheet-heading">
-              <span>Worksheet 2</span>
-              <h3>Project health and burn ranking</h3>
-              <p>Each row combines product health, status, work pressure, and recent token share.</p>
-            </div>
-            <div className="portfolio-table">
-              {projectBurn.map(({ project, tokens, costUsd, workUnits }) => (
-                <Link href={`/projects/${project.slug}`} className="portfolio-row" key={project.slug}>
-                  <div>
-                    <span className={`status-pill ${project.status}`}>{statusLabels[project.status]}</span>
-                    <strong>{project.name}</strong>
-                    <small>{project.focus}</small>
-                  </div>
-                  <div className="health-bar" aria-label={`${project.name} health ${project.healthScore}%`}><span style={{ width: `${project.healthScore}%` }} /></div>
-                  <div><strong>{project.healthScore}%</strong><small>health</small></div>
-                  <div><strong>{formatTokens(tokens)}</strong><small>{projectShare(tokens, totalHourlyTokens)}% token share</small></div>
-                  <div><strong>{currencyFormatter.format(costUsd)}</strong><small>{workUnits} work units</small></div>
-                </Link>
-              ))}
-            </div>
-          </article>
-
-          <aside className="worksheet-card insight-card">
-            <div className="worksheet-heading">
-              <span>Insight</span>
-              <h3>Executive readout</h3>
-            </div>
-            <div className="insight-list">
-              <article><strong>Highest burn:</strong> {highestBurnProject?.project.name ?? "n/a"} leads recent token usage.</article>
-              <article><strong>Attention:</strong> {topAlerts.length} active alerts are visible in the operating layer.</article>
-              <article><strong>Rule:</strong> prioritize low-health + high-burn products first.</article>
-            </div>
-          </aside>
+        <div className="jobs-project-list">
+          {projectRows.map(({ project, costUsd, workUnits, verdict }) => (
+            <Link href={`/projects/${project.slug}`} className="jobs-project-row" key={project.slug}>
+              <div>
+                <strong>{project.name}</strong>
+                <small>{statusLabels[project.status]}</small>
+              </div>
+              <span>{project.healthScore}%</span>
+              <span>{currencyFormatter.format(costUsd)}</span>
+              <span>{workUnits} work</span>
+              <em>{verdict}</em>
+            </Link>
+          ))}
         </div>
       </section>
 
-      <section className="panel tableau-dashboard runway-dashboard" id="ai-runway-dashboard" aria-label="AI spend and runway dashboard">
-        <div className="tableau-title-row">
-          <div>
-            <p className="eyebrow">AI Spend & Runway Dashboard · Tableau-style workbook</p>
-            <h2>Budget guardian control center</h2>
-            <p className="tableau-subtitle">Purpose-built for the executive question: how much budget is left, which planned work can auto-run, and which work needs review?</p>
-          </div>
-          <div className="tableau-source-card">
-            <span>Monthly cap</span>
-            <strong>{currencyFormatter.format(budget.monthlyBudgetUsd)}</strong>
-            <small>Reset {formatDate(budget.resetAt)} · {budget.source}</small>
-          </div>
+      <section className="jobs-section jobs-execution" aria-label="Execution dashboard">
+        <div className="jobs-section-heading">
+          <p className="jobs-kicker">Execution</p>
+          <h2>Is the machine moving?</h2>
         </div>
-
-        <div className="dashboard-kpi-grid">
-          <article><span>Spent</span><strong>{currencyFormatter.format(budget.usedUsd)}</strong><small>{budget.usedPercent}% of monthly budget</small></article>
-          <article><span>Runway left</span><strong>{currencyFormatter.format(budget.remainingBudgetUsd)}</strong><small>{budget.remainingPercent}% remaining</small></article>
-          <article><span>Token burn</span><strong>{formatTokens(budget.usedTokens)}</strong><small>{budget.tokenUsedPercent}% of token cap</small></article>
-          <article><span>Tokens left</span><strong>{formatTokens(budget.remainingTokens)}</strong><small>Policy-aware execution buffer</small></article>
+        <div className="jobs-execution-grid">
+          <article><span>Workers</span><strong>{autonomousStats.runningWorkers}</strong><small>running now</small></article>
+          <article><span>Open</span><strong>{autonomousStats.openTickets}</strong><small>tickets</small></article>
+          <article><span>P0</span><strong>{autonomousStats.p0Tickets}</strong><small>critical</small></article>
+          <article><span>Alerts</span><strong>{topAlerts.length}</strong><small>need attention</small></article>
         </div>
-
-        <div className="budget-meter workbook-meter" aria-label={`Budget used ${budget.usedPercent}%`}>
-          <span style={{ width: `${Math.min(budget.usedPercent, 100)}%` }} />
-        </div>
-
-        <div className="workbook-grid">
-          <article className="worksheet-card">
-            <div className="worksheet-heading">
-              <span>Worksheet 3</span>
-              <h3>Planned ticket spend</h3>
-              <p>Budget policy estimates before autonomous workers spend more tokens.</p>
-            </div>
-            <div className="budget-plan compact-plan">
-              {budgetPlan.map((ticket) => (
-                <article className="budget-ticket" key={ticket.id}>
-                  <div>
-                    <span className={`recommendation ${ticket.recommendation}`}>{ticket.recommendation}</span>
-                    <h3>{ticket.id}: {ticket.title}</h3>
-                    <p>{formatTokens(ticket.estimatedTokens.total)} tokens · {currencyFormatter.format(ticket.estimatedCostUsd)} est. · {ticket.remainingBudgetImpactPercent}% of remaining budget</p>
-                  </div>
-                  <span className={`budget-risk ${ticket.risk}`}>{ticket.risk}</span>
-                </article>
-              ))}
-            </div>
-          </article>
-
-          <aside className="worksheet-card insight-card">
-            <div className="worksheet-heading">
-              <span>Policy</span>
-              <h3>Runway readout</h3>
-            </div>
-            <div className="insight-list">
-              <article><strong>Auto-run:</strong> low-cost tickets can proceed without interrupting Telegram.</article>
-              <article><strong>Review:</strong> medium/high cost tickets stay visible before spend.</article>
-              <article><strong>Caveat:</strong> provider billing sync is pending; this is cockpit planning data.</article>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section className="panel tableau-dashboard execution-dashboard" id="execution-control-dashboard" aria-label="Execution control dashboard">
-        <div className="tableau-title-row">
-          <div>
-            <p className="eyebrow">Execution Control Dashboard · Tableau-style workbook</p>
-            <h2>Autonomous work command center</h2>
-            <p className="tableau-subtitle">Purpose-built for the executive question: what is running, what is blocked, and what requires founder attention now?</p>
-          </div>
-          <div className="tableau-source-card">
-            <span>Operating mode</span>
-            <strong>{autonomousState.mode}</strong>
-            <small>{autonomousState.notificationPolicy} · updated {autonomousState.updatedAt}</small>
-          </div>
-        </div>
-
-        <div className="dashboard-kpi-grid">
-          <article><span>P0 tickets</span><strong>{autonomousStats.p0Tickets}</strong><small>Highest priority work</small></article>
-          <article><span>Running workers</span><strong>{autonomousStats.runningWorkers}</strong><small>Current autonomous activity</small></article>
-          <article><span>Open tickets</span><strong>{autonomousStats.openTickets}</strong><small>Execution backlog</small></article>
-          <article><span>Alerts</span><strong>{topAlerts.length}</strong><small>Visible attention items</small></article>
-        </div>
-
-        <div className="workbook-grid three-two">
-          <article className="worksheet-card span-two">
-            <div className="worksheet-heading">
-              <span>Worksheet 4</span>
-              <h3>Execution queue by project</h3>
-              <p>Open ticket pressure and active worker allocation across the portfolio.</p>
-            </div>
-            <div className="execution-matrix">
-              {openTicketsByProject.map(({ project, tickets, workers }) => (
-                <article key={project.slug}>
-                  <strong>{project.name}</strong>
-                  <div className="execution-bars">
-                    <span style={{ width: `${Math.min(tickets * 16, 100)}%` }} />
-                    <span style={{ width: `${Math.min(workers * 40, 100)}%` }} />
-                  </div>
-                  <small>{tickets} open tickets · {workers} running workers</small>
-                </article>
-              ))}
-            </div>
-          </article>
-
-          <aside className="worksheet-card insight-card">
-            <div className="worksheet-heading">
-              <span>Attention</span>
-              <h3>Risk and blocker radar</h3>
-            </div>
-            <div className="alert-list dashboard-alert-list">
-              {topAlerts.map((alert) => (
-                <article className={`alert-item ${alert.severity}`} key={alert.id}>
-                  <span>{"source" in alert ? alert.source : "Orchestrator"}</span>
-                  <h3>{alert.title}</h3>
-                  <p>{alert.body}</p>
-                </article>
-              ))}
-            </div>
-          </aside>
-        </div>
-
-        <div className="worksheet-card full-width-card">
-          <div className="worksheet-heading">
-            <span>Worksheet 5</span>
-            <h3>Live autonomous ticket ledger</h3>
-            <p>Recent actionable work only; detailed project pages remain one click away.</p>
-          </div>
-          <div className="ticket-list dashboard-ticket-list">
-            {autonomousTickets.map((ticket) => (
-              <article className="ticket-row" key={ticket.id}>
-                <span className={`priority ${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
-                <div>
-                  <h3>{ticket.id}: {ticket.title}</h3>
-                  <p>{ticket.projectSlug} · {ticket.owner} · {ticket.status.replace("_", " ")}</p>
-                  <small>{ticket.nextAction}</small>
-                </div>
-              </article>
-            ))}
-          </div>
+        <div className="jobs-alert-strip">
+          {topAlerts.map((alert) => (
+            <article key={alert.id}>
+              <span>{"source" in alert ? alert.source : "Orchestrator"}</span>
+              <strong>{alert.title}</strong>
+            </article>
+          ))}
         </div>
       </section>
     </main>
