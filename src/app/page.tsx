@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CeoUsageDashboard } from "@/components/ceo-usage-dashboard";
-import { alerts, projects } from "@/lib/cockpit-data";
+import { alerts, getProjectAnalytics, projects } from "@/lib/cockpit-data";
 import {
   autonomousState,
   getAutonomousStats,
@@ -23,7 +23,33 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
+function formatMetric(value: number | null, suffix = "") {
+  if (value === null) return "—";
+  return `${value}${suffix}`;
+}
+
+function productPulseForProject(projectSlug: string) {
+  const analytics = getProjectAnalytics(projectSlug);
+  if (!analytics) return "Analytics not connected";
+  if (analytics.connectionStatus === "not_launched") {
+    return `${formatMetric(analytics.todayUsers)} today · ${formatMetric(analytics.weeklyActiveUsers)} WAU · no paid users`;
+  }
+  if (analytics.connectionStatus !== "live") return analytics.sourceLabel;
+  return `${formatMetric(analytics.todayUsers)} today · ${formatMetric(analytics.weeklyActiveUsers)} WAU · ${formatMetric(analytics.newSignups)} signups`;
+}
+
+function paidUsersForProject(projectSlug: string) {
+  const analytics = getProjectAnalytics(projectSlug);
+  if (!analytics) return "Billing pending";
+  if (analytics.paidUsers.length === 0) {
+    return analytics.connectionStatus === "live" ? "No Pro users" : "Pro usernames pending";
+  }
+  return analytics.paidUsers.map((user) => `@${user.username}`).join(", ");
+}
+
 function verdictForProject(projectSlug: string) {
+  const analytics = getProjectAnalytics(projectSlug);
+  if (analytics?.verdict) return analytics.verdict;
   if (projectSlug === "gorucu") return "Push growth";
   if (projectSlug === "sqlquest") return "Fix growth pipeline";
   if (projectSlug === "tercihai") return "Validate safety";
@@ -66,7 +92,13 @@ export default function Home() {
         { tokens: 0, costUsd: 0, workUnits: 0 },
       );
 
-      return { project, ...totals, verdict: verdictForProject(project.slug) };
+      return {
+        project,
+        ...totals,
+        pulse: productPulseForProject(project.slug),
+        paidUsers: paidUsersForProject(project.slug),
+        verdict: verdictForProject(project.slug),
+      };
     })
     .sort((a, b) => b.tokens - a.tokens);
 
@@ -127,21 +159,30 @@ export default function Home() {
 
       <CeoUsageDashboard activity={hourlyActivity} projects={projects} source={budget.source} />
 
-      <section className="jobs-section jobs-projects" id="projects" aria-label="Project health dashboard">
+      <section className="jobs-section jobs-projects" id="projects" aria-label="Product pulse dashboard">
         <div className="jobs-section-heading">
-          <p className="jobs-kicker">Projects</p>
-          <h2>Know what to do with each product.</h2>
+          <p className="jobs-kicker">Product Pulse</p>
+          <h2>Real users only. No fake traction.</h2>
         </div>
         <div className="jobs-project-list">
-          {projectRows.map(({ project, costUsd, workUnits, verdict }) => (
-            <Link href={`/projects/${project.slug}`} className="jobs-project-row" key={project.slug}>
+          {projectRows.map(({ project, costUsd, pulse, paidUsers, verdict }) => (
+            <Link href={`/projects/${project.slug}`} className="jobs-project-row product-pulse-row" key={project.slug}>
               <div>
                 <strong>{project.name}</strong>
                 <small>{statusLabels[project.status]}</small>
               </div>
-              <span>{project.healthScore}%</span>
-              <span>{currencyFormatter.format(costUsd)}</span>
-              <span>{workUnits} work</span>
+              <div>
+                <span>{pulse}</span>
+                <small>Today · WAU · signups/churn when live</small>
+              </div>
+              <div>
+                <span>{paidUsers}</span>
+                <small>Pro users by username</small>
+              </div>
+              <div>
+                <span>{currencyFormatter.format(costUsd)}</span>
+                <small>AI spend estimate</small>
+              </div>
               <em>{verdict}</em>
             </Link>
           ))}

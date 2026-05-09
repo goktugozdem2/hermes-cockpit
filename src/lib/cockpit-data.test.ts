@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getProjectDetails, projects } from "./cockpit-data";
+import { getProjectDetails, projectAnalytics, projects } from "./cockpit-data";
 
 describe("project architecture", () => {
   it("exposes architecture nodes and relationships for every project", () => {
@@ -24,5 +24,21 @@ describe("project architecture", () => {
     expect(names).toContain("Match Intro Worker");
     expect(names).toContain("OG Warning Worker");
     expect(names).toContain("GSC/SEO Worker");
+  });
+
+  it("tracks product analytics explicitly without inventing traction", () => {
+    expect(projectAnalytics).toHaveLength(projects.length);
+
+    for (const project of projects) {
+      const details = getProjectDetails(project.slug);
+      expect(details.analytics?.projectSlug).toBe(project.slug);
+      expect(details.analytics?.paidUsers).toEqual([]);
+    }
+
+    const tercihai = getProjectDetails("tercihai").analytics;
+    expect(tercihai?.connectionStatus).toBe("not_launched");
+    expect(tercihai?.todayUsers).toBe(0);
+    expect(tercihai?.weeklyActiveUsers).toBe(0);
+    expect(tercihai?.verdict).toContain("Do not show traction");
   });
 });

@@ -2110,10 +2110,10 @@ body:has(.jobs-shell) {
 
 .jobs-project-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1.4fr) .55fr .65fr .65fr minmax(160px, .8fr);
+  grid-template-columns: minmax(150px, .75fr) minmax(260px, 1.35fr) minmax(170px, .85fr) minmax(100px, .45fr) minmax(190px, .9fr);
   gap: 14px;
   align-items: center;
-  min-height: 82px;
+  min-height: 94px;
   padding: 18px 20px;
   border-radius: 22px;
   background: #f5f5f7;
@@ -2133,6 +2133,11 @@ body:has(.jobs-shell) {
   font-weight: 600;
   font-style: normal;
   letter-spacing: -.025em;
+}
+
+.product-pulse-row > div:nth-child(2) span,
+.product-pulse-row > div:nth-child(3) span {
+  line-height: 1.25;
 }
 
 .jobs-project-row small {

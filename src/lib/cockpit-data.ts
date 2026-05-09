@@ -21,6 +21,28 @@ export type Project = {
   tags: string[];
 };
 
+export type AnalyticsConnectionStatus = "live" | "not_connected" | "not_launched";
+
+export type PaidUser = {
+  username: string;
+  plan: "pro" | "supporter" | "team";
+  paidAt: string;
+  amountUsd: number;
+};
+
+export type ProjectAnalytics = {
+  projectSlug: string;
+  connectionStatus: AnalyticsConnectionStatus;
+  sourceLabel: string;
+  todayUsers: number | null;
+  weeklyActiveUsers: number | null;
+  newSignups: number | null;
+  churnedUsers: number | null;
+  conversionRate: number | null;
+  paidUsers: PaidUser[];
+  verdict: string;
+};
+
 export type CockpitTask = {
   id: string;
   projectSlug: string;
@@ -156,6 +178,57 @@ export const projects: Project[] = [
     lastDeploy: "local build track",
     healthScore: 82,
     tags: ["YKS", "AI Safety", "Supabase", "PDF"],
+  },
+];
+
+export const projectAnalytics: ProjectAnalytics[] = [
+  {
+    projectSlug: "gorucu",
+    connectionStatus: "not_connected",
+    sourceLabel: "Supabase analytics not connected yet",
+    todayUsers: null,
+    weeklyActiveUsers: null,
+    newSignups: null,
+    churnedUsers: null,
+    conversionRate: null,
+    paidUsers: [],
+    verdict: "Connect live product analytics before making growth calls",
+  },
+  {
+    projectSlug: "sqlquest",
+    connectionStatus: "not_connected",
+    sourceLabel: "Billing/product analytics not connected yet",
+    todayUsers: null,
+    weeklyActiveUsers: null,
+    newSignups: null,
+    churnedUsers: null,
+    conversionRate: null,
+    paidUsers: [],
+    verdict: "Connect Pro/billing table to show paying usernames",
+  },
+  {
+    projectSlug: "hermes-cockpit",
+    connectionStatus: "not_connected",
+    sourceLabel: "Internal cockpit telemetry only; product analytics pending",
+    todayUsers: null,
+    weeklyActiveUsers: null,
+    newSignups: null,
+    churnedUsers: null,
+    conversionRate: null,
+    paidUsers: [],
+    verdict: "Connect real analytics sources",
+  },
+  {
+    projectSlug: "tercihai",
+    connectionStatus: "not_launched",
+    sourceLabel: "No live Supabase users observed/connected",
+    todayUsers: 0,
+    weeklyActiveUsers: 0,
+    newSignups: 0,
+    churnedUsers: 0,
+    conversionRate: 0,
+    paidUsers: [],
+    verdict: "Do not show traction until real users exist",
   },
 ];
 
@@ -336,9 +409,14 @@ export function getProjectStats() {
   };
 }
 
+export function getProjectAnalytics(slug: string) {
+  return projectAnalytics.find((analytics) => analytics.projectSlug === slug);
+}
+
 export function getProjectDetails(slug: string) {
   return {
     project: getProjectBySlug(slug),
+    analytics: getProjectAnalytics(slug),
     tasks: tasks.filter((task) => task.projectSlug === slug),
     alerts: alerts.filter((alert) => alert.projectSlug === slug),
     agentRuns: agentRuns.filter((run) => run.projectSlug === slug),
